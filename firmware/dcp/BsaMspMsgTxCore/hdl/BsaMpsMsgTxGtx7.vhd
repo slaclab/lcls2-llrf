@@ -95,7 +95,7 @@ begin
          TX_CLK25_DIV_G           => 10,
          PMA_RSV_G                => x"00018480",
          RX_OS_CFG_G              => "0000010000000",
-         RXCDR_CFG_G              => x"03800023ff10400020",
+         RXCDR_CFG_G              => x"03000023ff20400020",
          -- Configure PLL sources         
          TX_PLL_G                 => "CPLL",
          RX_PLL_G                 => "CPLL",
