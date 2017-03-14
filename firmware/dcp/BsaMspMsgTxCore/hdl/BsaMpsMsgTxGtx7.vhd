@@ -33,7 +33,7 @@ entity BsaMpsMsgTxGtx7 is
       SIMULATION_G          : boolean    := false);
    port (
       -- Clock and Reset
-      cPllRefClk   : in  sl;-- 185.714 MHz 
+      cPllRefClk   : in  sl;            -- 185.714 MHz 
       stableClk    : in  sl;
       stableRst    : in  sl;
       -- GTX Status/Config Interface   

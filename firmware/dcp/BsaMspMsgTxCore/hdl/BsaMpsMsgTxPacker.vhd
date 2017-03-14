@@ -67,10 +67,10 @@ architecture rtl of BsaMpsMsgTxPacker is
       mpsPermit   : slv(3 downto 0);
       timeStamp   : slv(63 downto 0);
       bsaQuantity : Slv32Array(11 downto 0);
-      wrd         :    natural range 0 to 3;
-      cnt         :    natural range 0 to 11;
-      txMaster : AxiStreamMasterType;
-      state    : StateType;
+      wrd         : natural range 0 to 3;
+      cnt         : natural range 0 to 11;
+      txMaster    : AxiStreamMasterType;
+      state       : StateType;
    end record RegType;
    constant REG_INIT_C : RegType := (
       mpsPermit   => (others => '0'),

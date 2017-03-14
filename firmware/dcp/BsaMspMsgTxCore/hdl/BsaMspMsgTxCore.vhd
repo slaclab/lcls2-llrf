@@ -4,7 +4,7 @@
 -- Created    : 2017-03-13
 -- Last update: 2017-03-13
 -------------------------------------------------------------------------------
--- Description: GTX7 Wrapper
+-- Description: Core Module
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
 -- It is subject to the license terms in the LICENSE.txt file found in the 

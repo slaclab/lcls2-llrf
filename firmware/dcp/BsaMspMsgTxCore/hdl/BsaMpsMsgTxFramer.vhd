@@ -33,7 +33,7 @@ entity BsaMpsMsgTxFramer is
       sAxisMaster : in  AxiStreamMasterType;
       sAxisSlave  : out AxiStreamSlaveType;
       txData      : out slv(15 downto 0);
-      txdataK     : out slv(1 downto 0));
+      txDataK     : out slv(1 downto 0));
 end BsaMpsMsgTxFramer;
 
 architecture rtl of BsaMpsMsgTxFramer is
@@ -55,7 +55,7 @@ architecture rtl of BsaMpsMsgTxFramer is
 
    type RegType is record
       txData   : Slv16Array(DLY_C downto 0);
-      txdataK  : Slv2Array(DLY_C downto 0);
+      txDataK  : Slv2Array(DLY_C downto 0);
       crcValid : sl;
       crcRst   : sl;
       crcData  : slv(15 downto 0);
@@ -63,7 +63,7 @@ architecture rtl of BsaMpsMsgTxFramer is
    end record RegType;
    constant REG_INIT_C : RegType := (
       txData   => (others => (K28_2_C & K28_1_C)),
-      txdataK  => (others => "11"),
+      txDataK  => (others => "11"),
       crcValid => '0',
       crcRst   => '1',
       crcData  => (others => '0'),
@@ -83,7 +83,7 @@ begin
       v := r;
 
       -- Shift Register
-      v.txdataK(DLY_C downto 1) := r.txdataK(DLY_C-1 downto 0);
+      v.txDataK(DLY_C downto 1) := r.txDataK(DLY_C-1 downto 0);
       v.txData(DLY_C downto 1)  := r.txData(DLY_C-1 downto 0);
 
       -- State Machine
@@ -91,7 +91,7 @@ begin
          ----------------------------------------------------------------------
          when IDLE_S =>
             -- Send IDLE pattern
-            v.txdataK(0) := "11";
+            v.txDataK(0) := "11";
             v.txData(0)  := (K28_2_C & K28_1_C);
             -- Reset the CRC module
             v.crcValid   := '0';
@@ -99,7 +99,7 @@ begin
             -- Check for alignment
             if (sAxisMaster.tValid = '1') and (ssiGetUserSof(AXIS_CONFIG_C, sAxisMaster) = '1') then
                -- Send Start of Frame pattern
-               v.txdataK(0)             := "01";
+               v.txDataK(0)             := "01";
                v.txData(0)(7 downto 0)  := K28_5_C;
                v.txData(0)(15 downto 8) := sAxisMaster.tData(15 downto 8);
                -- Start the CRC engine
@@ -111,7 +111,7 @@ begin
          ----------------------------------------------------------------------
          when DATA_S =>
             -- Move the data
-            v.txdataK(0) := "00";
+            v.txDataK(0) := "00";
             v.txData(0)  := sAxisMaster.tData(15 downto 0);
             -- Check for end of frame
             if (sAxisMaster.tLast = '1') then
@@ -121,7 +121,7 @@ begin
          ----------------------------------------------------------------------
          when CRC0_S =>                 -- End of datagram @ v.txData(1)
             -- Send IDLE pattern
-            v.txdataK(0) := "11";
+            v.txDataK(0) := "11";
             v.txData(0)  := (K28_2_C & K28_1_C);
             -- Stop sending data to CRC engine
             v.crcValid   := '0';
@@ -130,28 +130,28 @@ begin
          ----------------------------------------------------------------------
          when CRC1_S =>                 -- End of datagram @ v.txData(2)
             -- Send IDLE pattern
-            v.txdataK(0) := "11";
+            v.txDataK(0) := "11";
             v.txData(0)  := (K28_2_C & K28_1_C);
             -- Next state
             v.state      := CRC2_S;
          ----------------------------------------------------------------------
          when CRC2_S =>                 -- End of datagram @ v.txData(3)
             -- Send IDLE pattern
-            v.txdataK(0) := "11";
+            v.txDataK(0) := "11";
             v.txData(0)  := (K28_2_C & K28_1_C);
             -- Next state
             v.state      := CRC3_S;
          ----------------------------------------------------------------------
          when CRC3_S =>
             -- Send CRC (overwrite last element of shift register)
-            v.txdataK(DLY_C) := "00";
+            v.txDataK(DLY_C) := "00";
             v.txData(DLY_C)  := crcResult(15 downto 0);
             -- Next state
             v.state          := CRC4_S;
          ----------------------------------------------------------------------
          when CRC4_S =>
             -- Send CRC (overwrite last element of shift register)
-            v.txdataK(DLY_C) := "00";
+            v.txDataK(DLY_C) := "00";
             v.txData(DLY_C)  := crcResult(31 downto 16);
             -- Next state
             v.state          := IDLE_S;
@@ -172,7 +172,7 @@ begin
       -- Outputs
       sAxisSlave <= AXI_STREAM_SLAVE_FORCE_C;
       txdata     <= r.txdata(DLY_C);
-      txdataK    <= r.txdataK(DLY_C);
+      txDataK    <= r.txDataK(DLY_C);
 
    end process comb;
 
