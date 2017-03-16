@@ -1,10 +1,10 @@
 -- Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2016.4 (lin64) Build 1756540 Mon Jan 23 19:11:19 MST 2017
--- Date        : Thu Mar 16 11:11:21 2017
+-- Date        : Thu Mar 16 11:47:45 2017
 -- Host        : rdsrv223 running 64-bit Red Hat Enterprise Linux Server release 6.8 (Santiago)
 -- Command     : write_vhdl -force -mode synth_stub
---               /u/re/ruckman/projects/lcls/lcls2-llrf/firmware/dcp/BsaMspMsgTxCore/images/BsaMspMsgTxCore.vhd
+--               /u/re/ruckman/projects/lcls/lcls2-llrf/firmware/dcp/BsaMspMsgTxCore/images/BsaMspMsgTxCore_stub.vhd
 -- Design      : BsaMspMsgTxCore
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xc7k160tffg676-2
