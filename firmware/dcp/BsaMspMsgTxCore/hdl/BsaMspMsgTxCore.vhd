@@ -2,7 +2,7 @@
 -- File       : BsaMspMsgTxCore.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-13
+-- Last update: 2017-03-16
 -------------------------------------------------------------------------------
 -- Description: Core Module
 -------------------------------------------------------------------------------
@@ -52,7 +52,6 @@ entity BsaMspMsgTxCore is
       stableRst     : in  sl;
       -- GTX Status/Config Interface   
       cPllLock      : out sl;
-      txPolarity    : in  sl              := '0';
       txPreCursor   : in  slv(4 downto 0) := (others => '0');
       txPostCursor  : in  slv(4 downto 0) := (others => '0');
       txDiffCtrl    : in  slv(3 downto 0) := "1111";
@@ -135,7 +134,6 @@ begin
          stableRst    => stableRst,
          -- GTX Status/Config Interface   
          cPllLock     => cPllLock,
-         txPolarity   => txPolarity,
          txPreCursor  => txPreCursor,
          txPostCursor => txPostCursor,
          txDiffCtrl   => txDiffCtrl,

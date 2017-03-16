@@ -21,7 +21,6 @@ U_Core: entity work.BsaMspMsgTxCore
     stableClk => stableClk,
     stableRst => stableRst,
     cPllLock => cPllLock,
-    txPolarity => txPolarity,
     txPreCursor => txPreCursor,
     txPostCursor => txPostCursor,
     txDiffCtrl => txDiffCtrl,

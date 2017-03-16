@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgTxGtx7.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-13
+-- Last update: 2017-03-16
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper
 -------------------------------------------------------------------------------
@@ -38,7 +38,6 @@ entity BsaMpsMsgTxGtx7 is
       stableRst    : in  sl;
       -- GTX Status/Config Interface   
       cPllLock     : out sl;
-      txPolarity   : in  sl              := '0';
       txPreCursor  : in  slv(4 downto 0) := (others => '0');
       txPostCursor : in  slv(4 downto 0) := (others => '0');
       txDiffCtrl   : in  slv(3 downto 0) := "1111";
@@ -217,7 +216,7 @@ begin
          txResetDoneOut   => txRstL,
          txDataIn         => txData,
          txCharIsKIn      => txDataK,
-         txPolarityIn     => txPolarity,
+         txPolarityIn     => '0',
          txBufStatusOut   => open,
          txPowerDown      => "00",
          rxPowerDown      => "11",

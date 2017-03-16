@@ -7,6 +7,8 @@ loadRuckusTcl $::env(PROJ_DIR)/../../submodules/surf
 # Load source code 
 loadSource -dir            "$::DIR_PATH/hdl/"
 loadSource -sim_only -dir  "$::DIR_PATH/tb/"
+loadSource -sim_only -path "$::DIR_PATH/../../common/AppCommon/core/BsaMpsMsgRxFramer.vhd"
+loadSource -sim_only -path "$::DIR_PATH/../../common/AppCommon/core/BsaMpsMsgRxFramerReg.vhd"
 
 # Configure the top-level RTL and simulation
 set_property top "BsaMspMsgTxCore" [current_fileset]

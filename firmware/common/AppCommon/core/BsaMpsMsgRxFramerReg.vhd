@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxFramerReg.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-13
+-- Last update: 2017-03-16
 -------------------------------------------------------------------------------
 -- Description: TX Data Framer
 -------------------------------------------------------------------------------
@@ -26,34 +26,25 @@ use work.AxiLitePkg.all;
 entity BsaMpsMsgRxFramerReg is
    generic (
       TPD_G            : time            := 1 ns;
+      SIMULATION_G     : boolean         := false;
       AXI_CLK_FREQ_G   : real            := 156.25E+6;  -- units of Hz
       AXI_ERROR_RESP_G : slv(1 downto 0) := AXI_RESP_DECERR_C);
    port (
-      -- Status/Configuration Interface (clk domain)
-      clk             : in  sl;
-      rst             : in  sl;
+      -- Status/Configuration Interface (rxClk domain)
+      rxClk           : in  sl;
+      rxRst           : in  sl;
       rxLinkUp        : in  sl;
       rxDecErr        : in  slv(1 downto 0);
       rxDispErr       : in  slv(1 downto 0);
       rxBufStatus     : in  slv(2 downto 0);
       cPllLock        : in  sl;
       rxPolarity      : out sl;
-      txPolarity      : out sl;
-      pktSent         : in  sl;
-      backpressure    : in  sl;
-      errPktDrop      : in  sl;
+      fifoWr          : in  sl;
+      overflow        : in  sl;
       errPktLen       : in  sl;
       errCrc          : in  sl;
-      overflow        : in  sl;
-      termFrame       : in  sl;
-      pktLenStrb      : in  sl;
-      pktLen          : in  slv(7 downto 0);
-      wibSofDet       : in  sl;
+      sofDet          : in  sl;
       gtRst           : out sl;
-      startLog        : out sl;
-      oneShotLog      : out sl;
-      dbgCrcRcv       : in  slv(31 downto 0);
-      dbgCrcCalc      : in  slv(31 downto 0);
       -- AXI-Lite Interface (axilClk domain)
       axilClk         : in  sl;
       axilRst         : in  sl;
@@ -65,15 +56,11 @@ end BsaMpsMsgRxFramerReg;
 
 architecture rtl of BsaMpsMsgRxFramerReg is
 
-   constant STATUS_SIZE_C : positive := 14;
+   constant STATUS_SIZE_C : positive := 10;
 
    type RegType is record
-      startLog       : sl;
-      oneShotLog     : sl;
       gtRst          : sl;
-      minPktLen      : slv(7 downto 0);
       rxPolarity     : sl;
-      txPolarity     : sl;
       cntRst         : sl;
       rollOverEn     : slv(STATUS_SIZE_C-1 downto 0);
       hardRst        : sl;
@@ -82,12 +69,8 @@ architecture rtl of BsaMpsMsgRxFramerReg is
    end record;
 
    constant REG_INIT_C : RegType := (
-      startLog       => '0',
-      oneShotLog     => '0',
       gtRst          => '0',
-      minPktLen      => x"FF",
       rxPolarity     => '0',
-      txPolarity     => '0',
       cntRst         => '1',
       rollOverEn     => toSlv(1, STATUS_SIZE_C),
       hardRst        => '0',
@@ -103,7 +86,7 @@ architecture rtl of BsaMpsMsgRxFramerReg is
    signal rxBufStatusSync : slv(2 downto 0);
    signal pktLength       : slv(7 downto 0);
    signal packetRate      : slv(31 downto 0);
-   signal wibSofRate      : slv(31 downto 0);
+   signal sofRate         : slv(31 downto 0);
    signal gtRxFifoErr     : sl;
 
    -- attribute dont_touch      : string;
@@ -111,9 +94,8 @@ architecture rtl of BsaMpsMsgRxFramerReg is
 
 begin
 
-   comb : process (axilReadMaster, axilRst, axilWriteMaster, dbgCrcCalc,
-                   dbgCrcRcv, packetRate, pktLength, r, rxBufStatusSync,
-                   statusCnt, statusOut, wibSofRate) is
+   comb : process (axilReadMaster, axilRst, axilWriteMaster, packetRate, r,
+                   rxBufStatusSync, sofRate, statusCnt, statusOut) is
       variable v      : RegType;
       variable regCon : AxiLiteEndPointType;
    begin
@@ -121,11 +103,9 @@ begin
       v := r;
 
       -- Reset the strobes
-      v.hardRst    := '0';
-      v.cntRst     := '0';
-      v.gtRst      := '0';
-      v.startLog   := '0';
-      v.oneShotLog := '0';
+      v.hardRst := '0';
+      v.cntRst  := '0';
+      v.gtRst   := '0';
 
       -- Check for hard reset
       if (r.hardRst = '1') then
@@ -142,34 +122,18 @@ begin
       end loop;
       axiSlaveRegisterR(regCon, x"400", 0, statusOut);
       axiSlaveRegisterR(regCon, x"404", 0, rxBufStatusSync);
-      axiSlaveRegisterR(regCon, x"408", 0, r.minPktLen);
-      axiSlaveRegisterR(regCon, x"40C", 0, pktLength);
       axiSlaveRegisterR(regCon, x"410", 0, packetRate);
-      axiSlaveRegisterR(regCon, x"414", 0, wibSofRate);
-      axiSlaveRegisterR(regCon, x"418", 0, dbgCrcRcv);
-      axiSlaveRegisterR(regCon, x"41C", 0, dbgCrcCalc);
+      axiSlaveRegisterR(regCon, x"414", 0, sofRate);
 
       -- Map the write registers
       axiSlaveRegister(regCon, x"700", 0, v.rxPolarity);
-      axiSlaveRegister(regCon, x"704", 0, v.txPolarity);
-      axiSlaveRegister(regCon, x"708", 0, v.gtRst);
-      axiSlaveRegister(regCon, x"710", 0, v.startLog);
-      axiSlaveRegister(regCon, x"714", 0, v.oneShotLog);
       axiSlaveRegister(regCon, x"7F0", 0, v.rollOverEn);
       axiSlaveRegister(regCon, x"7F4", 0, v.cntRst);
+      axiSlaveRegister(regCon, x"7F8", 0, v.gtRst);
       axiSlaveRegister(regCon, x"7FC", 0, v.hardRst);
 
       -- Closeout the transaction
       axiSlaveDefault(regCon, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
-
-      -- Keep statistics on the packet length min. and current value
-      if (r.cntRst = '1') then
-         v.minPktLen := x"FF";
-      else
-         if (pktLength < r.minPktLen) then
-            v.minPktLen := pktLength;
-         end if;
-      end if;
 
       -- Synchronous Reset
       if (axilRst = '1') then
@@ -192,29 +156,13 @@ begin
       end if;
    end process seq;
 
-   U_startLog : entity work.SynchronizerOneShot
-      generic map (
-         TPD_G => TPD_G)
-      port map (
-         clk     => clk,
-         dataIn  => r.startLog,
-         dataOut => startLog);
-
-   U_oneShotLog : entity work.SynchronizerOneShot
-      generic map (
-         TPD_G => TPD_G)
-      port map (
-         clk     => clk,
-         dataIn  => r.oneShotLog,
-         dataOut => oneShotLog);
-
    U_gtRst : entity work.PwrUpRst
       generic map (
          TPD_G      => TPD_G,
-         DURATION_G => 25000000)        -- 100 ms
+         DURATION_G => ite(SIMULATION_G, 250, 25000000))  -- 100 ms
       port map (
          arst   => r.gtRst,
-         clk    => clk,
+         clk    => rxClk,
          rstOut => gtRst);
 
    U_packetRate : entity work.SyncTrigRate
@@ -226,14 +174,14 @@ begin
          CNT_WIDTH_G    => 32)              -- Counters' width
       port map (
          -- Trigger Input (locClk domain)
-         trigIn      => pktLenStrb,
+         trigIn      => fifoWr,
          -- Trigger Rate Output (locClk domain)
          trigRateOut => packetRate,
          -- Clocks
-         locClk      => clk,
+         locClk      => rxClk,
          refClk      => axilClk);
 
-   U_wibSofRate : entity work.SyncTrigRate
+   U_sofRate : entity work.SyncTrigRate
       generic map (
          TPD_G          => TPD_G,
          COMMON_CLK_G   => false,
@@ -242,30 +190,19 @@ begin
          CNT_WIDTH_G    => 32)              -- Counters' width
       port map (
          -- Trigger Input (locClk domain)
-         trigIn      => wibSofDet,
+         trigIn      => sofDet,
          -- Trigger Rate Output (locClk domain)
-         trigRateOut => wibSofRate,
+         trigRateOut => sofRate,
          -- Clocks
-         locClk      => clk,
+         locClk      => rxClk,
          refClk      => axilClk);
-
-   U_pktLen : entity work.SynchronizerFifo
-      generic map (
-         TPD_G        => TPD_G,
-         DATA_WIDTH_G => 8)
-      port map (
-         wr_clk => clk,
-         wr_en  => pktLenStrb,
-         din    => pktLen,
-         rd_clk => axilClk,
-         dout   => pktLength);
 
    U_rxBufStatus : entity work.SynchronizerFifo
       generic map (
          TPD_G        => TPD_G,
          DATA_WIDTH_G => 3)
       port map (
-         wr_clk => clk,
+         wr_clk => rxClk,
          din    => rxBufStatus,
          rd_clk => axilClk,
          dout   => rxBufStatusSync);
@@ -273,13 +210,11 @@ begin
    U_SyncOutVec : entity work.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
-         WIDTH_G => 2)
+         WIDTH_G => 1)
       port map (
-         clk        => clk,
+         clk        => rxClk,
          dataIn(0)  => r.rxPolarity,
-         dataIn(1)  => r.txPolarity,
-         dataOut(0) => rxPolarity,
-         dataOut(1) => txPolarity);
+         dataOut(0) => rxPolarity);
 
    gtRxFifoErr <= rxBufStatus(2) and rxLinkUp;
 
@@ -292,18 +227,14 @@ begin
          WIDTH_G        => STATUS_SIZE_C)
       port map (
          -- Input Status bit Signals (wrClk domain)
-         statusIn(13)         => gtRxFifoErr,
-         statusIn(12)         => termFrame,
-         statusIn(11)         => overflow,
-         statusIn(10)         => cPllLock,
-         statusIn(9)          => errCrc,
-         statusIn(8)          => errPktLen,
-         statusIn(7)          => errPktDrop,
-         statusIn(6)          => backpressure,
-         statusIn(5)          => rxLinkUp,
+         statusIn(9)          => gtRxFifoErr,
+         statusIn(8)          => cPllLock,
+         statusIn(7)          => errCrc,
+         statusIn(6)          => errPktLen,
+         statusIn(5)          => overflow,
          statusIn(4 downto 3) => rxDispErr,
          statusIn(2 downto 1) => rxDecErr,
-         statusIn(0)          => pktSent,
+         statusIn(0)          => rxLinkUp,
          -- Output Status bit Signals (rdClk domain)  
          statusOut            => statusOut,
          -- Status Bit Counters Signals (rdClk domain) 
@@ -311,7 +242,7 @@ begin
          rollOverEnIn         => r.rollOverEn,
          cntOut               => statusCnt,
          -- Clocks and Reset Ports
-         wrClk                => clk,
+         wrClk                => rxClk,
          rdClk                => axilClk);
 
 end rtl;

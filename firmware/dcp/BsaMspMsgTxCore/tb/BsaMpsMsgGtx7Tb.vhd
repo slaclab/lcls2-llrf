@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgGtx7Tb.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-15
+-- Last update: 2017-03-16
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper Simulation Testbed
 -------------------------------------------------------------------------------
@@ -21,13 +21,14 @@ use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
 use work.StdRtlPkg.all;
+use work.AxiLitePkg.all;
 
 entity BsaMpsMsgGtx7Tb is end BsaMpsMsgGtx7Tb;
 
 architecture testbed of BsaMpsMsgGtx7Tb is
 
-   constant CLK_PERIOD_C : time := 5.384 ns;
-   constant TPD_G        : time := CLK_PERIOD_C/4;
+   constant CLK_PERIOD_C : time    := 5.384 ns;
+   constant TPD_G        : time    := CLK_PERIOD_C/4;
    constant TIMEOUT_C    : natural := 185;  -- ~ 1MHz strobe    
 
    type RegType is record
@@ -55,11 +56,13 @@ architecture testbed of BsaMpsMsgGtx7Tb is
    signal rxDecErr  : slv(1 downto 0)  := (others => '0');
    signal rxDispErr : slv(1 downto 0)  := (others => '0');
 
+   signal fifoValid   : sl                      := '0';
+   signal mpsPermit   : slv(3 downto 0)         := (others => '0');
+   signal timeStamp   : slv(63 downto 0)        := (others => '0');
+   signal bsaQuantity : Slv32Array(11 downto 0) := (others => (others => '0'));
+
 begin
 
-   -----------------------------
-   -- Generate clocks and resets
-   -----------------------------
    U_ClkRst : entity work.ClkRst
       generic map (
          CLK_PERIOD_G      => CLK_PERIOD_C,
@@ -68,69 +71,6 @@ begin
       port map (
          clkP => clk,
          rst  => rst);
-
-   U_Tx : entity work.BsaMspMsgTxCore
-      generic map (
-         TPD_G                 => TPD_G,
-         SIM_GTRESET_SPEEDUP_G => "TRUE",
-         SIMULATION_G          => true)
-      port map (
-         -- BSA/MPS Interface
-         usrClk        => clk,
-         usrRst        => rst,
-         timingStrobe  => r.strobe,
-         timeStamp     => r.cnt,
-         bsaQuantity0  => r.cnt(31 downto 0),
-         bsaQuantity1  => r.cnt(31 downto 0),
-         bsaQuantity2  => r.cnt(31 downto 0),
-         bsaQuantity3  => r.cnt(31 downto 0),
-         bsaQuantity4  => r.cnt(31 downto 0),
-         bsaQuantity5  => r.cnt(31 downto 0),
-         bsaQuantity6  => r.cnt(31 downto 0),
-         bsaQuantity7  => r.cnt(31 downto 0),
-         bsaQuantity8  => r.cnt(31 downto 0),
-         bsaQuantity9  => r.cnt(31 downto 0),
-         bsaQuantity10 => r.cnt(31 downto 0),
-         bsaQuantity11 => r.cnt(31 downto 0),
-         mpsPermit     => r.cnt(3 downto 0),
-         -- GTX's Clock and Reset
-         cPllRefClk    => clk,
-         stableClk     => clk,
-         stableRst     => rst,
-         -- GTX Status/Config Interface   
-         txPolarity    => '0',
-         txPreCursor   => (others => '0'),
-         txPostCursor  => (others => '0'),
-         txDiffCtrl    => "1111",
-         -- GTX Ports
-         gtTxP         => linkP,
-         gtTxN         => linkN,
-         gtRxP         => '0',
-         gtRxN         => '1');
-
-   U_Rx : entity work.BsaMpsMsgRxGtx7
-      generic map (
-         TPD_G                 => TPD_G,
-         SIM_GTRESET_SPEEDUP_G => "TRUE",
-         SIMULATION_G          => true)
-      port map (
-         -- Clock and Reset
-         cPllRefClk => clk,
-         stableClk  => clk,
-         stableRst  => rst,
-         -- GTX Interface
-         gtTxP      => open,
-         gtTxN      => open,
-         gtRxP      => linkP,
-         gtRxN      => linkN,
-         -- RX Interface
-         rxClk      => clk,
-         rxRst      => rst,
-         rxValid    => rxValid,
-         rxData     => rxData,
-         rxdataK    => rxdataK,
-         rxDecErr   => rxDecErr,
-         rxDispErr  => rxDispErr);
 
    comb : process (r, rst) is
       variable v : RegType;
@@ -170,5 +110,100 @@ begin
          r <= rin after TPD_G;
       end if;
    end process seq;
+
+   U_Tx : entity work.BsaMspMsgTxCore
+      generic map (
+         TPD_G                 => TPD_G,
+         SIM_GTRESET_SPEEDUP_G => "TRUE",
+         SIMULATION_G          => true)
+      port map (
+         -- BSA/MPS Interface
+         usrClk        => clk,
+         usrRst        => rst,
+         timingStrobe  => r.strobe,
+         timeStamp     => r.cnt,
+         bsaQuantity0  => r.cnt(31 downto 0),
+         bsaQuantity1  => r.cnt(31 downto 0),
+         bsaQuantity2  => r.cnt(31 downto 0),
+         bsaQuantity3  => r.cnt(31 downto 0),
+         bsaQuantity4  => r.cnt(31 downto 0),
+         bsaQuantity5  => r.cnt(31 downto 0),
+         bsaQuantity6  => r.cnt(31 downto 0),
+         bsaQuantity7  => r.cnt(31 downto 0),
+         bsaQuantity8  => r.cnt(31 downto 0),
+         bsaQuantity9  => r.cnt(31 downto 0),
+         bsaQuantity10 => r.cnt(31 downto 0),
+         bsaQuantity11 => r.cnt(31 downto 0),
+         mpsPermit     => r.cnt(3 downto 0),
+         -- GTX's Clock and Reset
+         cPllRefClk    => clk,
+         stableClk     => clk,
+         stableRst     => rst,
+         -- GTX Status/Config Interface   
+         txPreCursor   => (others => '0'),
+         txPostCursor  => (others => '0'),
+         txDiffCtrl    => "1111",
+         -- GTX Ports
+         gtTxP         => linkP,
+         gtTxN         => linkN,
+         gtRxP         => '0',
+         gtRxN         => '1');
+
+   U_Rx : entity work.BsaMpsMsgRxGtx7
+      generic map (
+         TPD_G                 => TPD_G,
+         SIM_GTRESET_SPEEDUP_G => "TRUE",
+         SIMULATION_G          => true)
+      port map (
+         -- Clock and Reset
+         cPllRefClk => clk,
+         stableClk  => clk,
+         stableRst  => rst,
+         -- GTX Interface
+         gtTxP      => open,
+         gtTxN      => open,
+         gtRxP      => linkP,
+         gtRxN      => linkN,
+         -- RX Interface
+         rxClk      => clk,
+         rxRst      => rst,
+         rxValid    => rxValid,
+         rxData     => rxData,
+         rxdataK    => rxdataK,
+         rxDecErr   => rxDecErr,
+         rxDispErr  => rxDispErr);
+
+   U_RxFramer : entity work.BsaMpsMsgRxFramer
+      generic map (
+         TPD_G            => TPD_G,
+         SIMULATION_G     => true,
+         AXI_CLK_FREQ_G   => 185.7E+6,  -- units of Hz
+         AXI_ERROR_RESP_G => AXI_RESP_DECERR_C)
+      port map (
+         -- AXI-Lite Interface (axilClk domain)
+         axilClk         => clk,
+         axilRst         => rst,
+         axilReadMaster  => AXI_LITE_READ_MASTER_INIT_C,
+         axilReadSlave   => open,
+         axilWriteMaster => AXI_LITE_WRITE_MASTER_INIT_C,
+         axilWriteSlave  => open,
+         -- RX Data Interface (clk domain)
+         rxClk           => clk,
+         rxRst           => rst,
+         rxValid         => rxValid,
+         rxData          => rxData,
+         rxdataK         => rxdataK,
+         rxDecErr        => rxDecErr,
+         rxDispErr       => rxDispErr,
+         rxBufStatus     => "000",
+         rxPolarity      => open,
+         cPllLock        => '1',
+         gtRst           => open,
+         -- RX Frame Interface (axilClk domain)     
+         fifoRd          => '1',
+         fifoValid       => fifoValid,
+         mpsPermit       => mpsPermit,
+         timeStamp       => timeStamp,
+         bsaQuantity     => bsaQuantity);
 
 end testbed;

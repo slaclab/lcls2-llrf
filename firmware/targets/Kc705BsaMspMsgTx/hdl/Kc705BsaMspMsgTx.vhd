@@ -69,7 +69,6 @@ architecture top_level of Kc705BsaMspMsgTx is
          stableClk     : in  std_logic;
          stableRst     : in  std_logic;
          cPllLock      : out std_logic;
-         txPolarity    : in  std_logic;
          txPreCursor   : in  std_logic_vector (4 downto 0);
          txPostCursor  : in  std_logic_vector (4 downto 0);
          txDiffCtrl    : in  std_logic_vector (3 downto 0);
@@ -200,7 +199,6 @@ begin
          stableRst     => stableRst,
          -- GTX Status/Config Interface   
          cPllLock      => cPllLock,
-         txPolarity    => '0',
          txPreCursor   => (others => '0'),
          txPostCursor  => (others => '0'),
          txDiffCtrl    => "1111",
