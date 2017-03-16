@@ -2,7 +2,7 @@
 -- File       : Kc705BsaMspMsgTx.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-13
+-- Last update: 2017-03-15
 -------------------------------------------------------------------------------
 -- Description: Development Board Example
 -------------------------------------------------------------------------------
@@ -105,6 +105,22 @@ architecture top_level of Kc705BsaMspMsgTx is
    signal stableRst : sl;
    signal cPllLock  : sl;
 
+   signal timingStrobe  : sl;
+   signal timeStamp     : slv(63 downto 0);
+   signal bsaQuantity0  : slv(31 downto 0);
+   signal bsaQuantity1  : slv(31 downto 0);
+   signal bsaQuantity2  : slv(31 downto 0);
+   signal bsaQuantity3  : slv(31 downto 0);
+   signal bsaQuantity4  : slv(31 downto 0);
+   signal bsaQuantity5  : slv(31 downto 0);
+   signal bsaQuantity6  : slv(31 downto 0);
+   signal bsaQuantity7  : slv(31 downto 0);
+   signal bsaQuantity8  : slv(31 downto 0);
+   signal bsaQuantity9  : slv(31 downto 0);
+   signal bsaQuantity10 : slv(31 downto 0);
+   signal bsaQuantity11 : slv(31 downto 0);
+   signal mpsPermit     : slv(3 downto 0);
+
 begin
 
    led(7) <= '0';
@@ -163,23 +179,23 @@ begin
          -- BSA/MPS Interface
          usrClk        => usrClk,
          usrRst        => usrRst,
-         timingStrobe  => r.strobe,
-         timeStamp     => r.cnt,
-         bsaQuantity0  => r.cnt(31 downto 0),
-         bsaQuantity1  => r.cnt(31 downto 0),
-         bsaQuantity2  => r.cnt(31 downto 0),
-         bsaQuantity3  => r.cnt(31 downto 0),
-         bsaQuantity4  => r.cnt(31 downto 0),
-         bsaQuantity5  => r.cnt(31 downto 0),
-         bsaQuantity6  => r.cnt(31 downto 0),
-         bsaQuantity7  => r.cnt(31 downto 0),
-         bsaQuantity8  => r.cnt(31 downto 0),
-         bsaQuantity9  => r.cnt(31 downto 0),
-         bsaQuantity10 => r.cnt(31 downto 0),
-         bsaQuantity11 => r.cnt(31 downto 0),
-         mpsPermit     => r.cnt(3 downto 0),
+         timingStrobe  => timingStrobe,
+         timeStamp     => timeStamp,
+         bsaQuantity0  => bsaQuantity0,
+         bsaQuantity1  => bsaQuantity1,
+         bsaQuantity2  => bsaQuantity2,
+         bsaQuantity3  => bsaQuantity3,
+         bsaQuantity4  => bsaQuantity4,
+         bsaQuantity5  => bsaQuantity5,
+         bsaQuantity6  => bsaQuantity6,
+         bsaQuantity7  => bsaQuantity7,
+         bsaQuantity8  => bsaQuantity8,
+         bsaQuantity9  => bsaQuantity9,
+         bsaQuantity10 => bsaQuantity10,
+         bsaQuantity11 => bsaQuantity11,
+         mpsPermit     => mpsPermit,
          -- GTX's Clock and Reset
-         cPllRefClk    => refClk(0),       -- 185.714 MHz
+         cPllRefClk    => refClk(0),    -- 185.714 MHz
          stableClk     => stableClk,  -- Note: REQP-1584 = GTxE2 PLLLOCKDETCLK can not be REFCLK (cPllRefClk != stableClk)
          stableRst     => stableRst,
          -- GTX Status/Config Interface   
@@ -223,6 +239,23 @@ begin
 
       -- Register the variable for next clock cycle
       rin <= v;
+
+      -- Outputs
+      timingStrobe  <= r.strobe;
+      timeStamp     <= r.cnt;
+      bsaQuantity0  <= r.cnt(31 downto 0);
+      bsaQuantity1  <= r.cnt(31 downto 0);
+      bsaQuantity2  <= r.cnt(31 downto 0);
+      bsaQuantity3  <= r.cnt(31 downto 0);
+      bsaQuantity4  <= r.cnt(31 downto 0);
+      bsaQuantity5  <= r.cnt(31 downto 0);
+      bsaQuantity6  <= r.cnt(31 downto 0);
+      bsaQuantity7  <= r.cnt(31 downto 0);
+      bsaQuantity8  <= r.cnt(31 downto 0);
+      bsaQuantity9  <= r.cnt(31 downto 0);
+      bsaQuantity10 <= r.cnt(31 downto 0);
+      bsaQuantity11 <= r.cnt(31 downto 0);
+      mpsPermit     <= r.cnt(3 downto 0);
 
    end process comb;
 
