@@ -32,7 +32,7 @@ CreateDebugCore ${ilaName}
 #######################
 ## Set the record depth
 #######################
-set_property C_DATA_DEPTH 8192 [get_debug_cores ${ilaName}]
+set_property C_DATA_DEPTH 1024 [get_debug_cores ${ilaName}]
 
 #################################
 ## Set the clock for the ILA core
@@ -43,6 +43,8 @@ SetDebugCoreClk ${ilaName} {U_Core/U_Framer/txClk}
 ## Set the debug Probes
 #######################
 
+ConfigProbe ${ilaName} {U_Core/U_Gtx/cPllLock}
+ConfigProbe ${ilaName} {U_Core/U_Gtx/U_Gtx7Core/txResetDoneOut}
 ConfigProbe ${ilaName} {U_Core/U_Framer/sAxisMaster[tValid]}
 ConfigProbe ${ilaName} {U_Core/U_Framer/sAxisMaster[tLast]}
 ConfigProbe ${ilaName} {U_Core/U_Framer/sAxisMaster[tUser][*]}
