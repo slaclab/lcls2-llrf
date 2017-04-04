@@ -2,9 +2,9 @@
 -- File       : BsaMpsMsgRxFramer.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-16
+-- Last update: 2017-04-04
 -------------------------------------------------------------------------------
--- Description: TX Data Framer
+-- Description: RX Data Framer
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
 -- It is subject to the license terms in the LICENSE.txt file found in the 
@@ -22,6 +22,7 @@ use ieee.std_logic_arith.all;
 
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
+use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxFramer is
    generic (
@@ -52,70 +53,15 @@ entity BsaMpsMsgRxFramer is
       -- RX Frame Interface (axilClk domain)     
       fifoRd          : in  sl;
       fifoValid       : out sl;
-      mpsPermit       : out slv(3 downto 0);
-      timeStamp       : out slv(63 downto 0);
-      bsaQuantity     : out Slv32Array(11 downto 0));
+      remoteMsg       : out MsgType);
 end BsaMpsMsgRxFramer;
 
 architecture rtl of BsaMpsMsgRxFramer is
 
-   constant K28_5_C      : slv(7 downto 0)  := "10111100";  -- K28.5, 0xBC
-   constant K28_1_C      : slv(7 downto 0)  := "00111100";  -- K28.1, 0x3C
-   constant K28_2_C      : slv(7 downto 0)  := "01011100";  -- K28.2, 0x5C
-   constant IDLE_C       : slv(15 downto 0) := (K28_2_C & K28_1_C);
-   constant FIFO_WIDTH_C : positive         := 452;
-
-   type MsgType is record
-      mpsPermit   : slv(3 downto 0);
-      timeStamp   : slv(63 downto 0);
-      bsaQuantity : Slv32Array(11 downto 0);
-   end record MsgType;
-   constant MSG_INIT_C : MsgType := (
-      mpsPermit   => (others => '0'),
-      timeStamp   => (others => '0'),
-      bsaQuantity => (others => (others => '0')));
-
-   function fromSlv (dout : slv(FIFO_WIDTH_C-1 downto 0)) return MsgType is
-      variable retVar : MsgType;
-      variable i      : natural;
-   begin
-      -- Reset the variables
-      retVar := MSG_INIT_C;
-
-      -- Load the BSA array
-      for i in 11 downto 0 loop
-         retVar.bsaQuantity(i) := dout((i*32)+31 downto (i*32));
-      end loop;
-
-      -- Load the time stamp
-      retVar.timeStamp := dout(447 downto 384);
-
-      -- Load the MPS permit
-      retVar.mpsPermit := dout(451 downto 448);
-
-      return retVar;
-   end function;
-
-   function toSlv (msg : MsgType) return slv is
-      variable retVar : slv(FIFO_WIDTH_C-1 downto 0);
-      variable i      : natural;
-   begin
-      -- Reset the variables
-      retVar := (others => '0');
-
-      -- Load the BSA array
-      for i in 11 downto 0 loop
-         retVar((i*32)+31 downto (i*32)) := msg.bsaQuantity(i);
-      end loop;
-
-      -- Load the time stamp
-      retVar(447 downto 384) := msg.timeStamp;
-
-      -- Load the MPS permit
-      retVar(451 downto 448) := msg.mpsPermit;
-
-      return retVar;
-   end function;
+   constant K28_5_C : slv(7 downto 0)  := "10111100";  -- K28.5, 0xBC
+   constant K28_1_C : slv(7 downto 0)  := "00111100";  -- K28.1, 0x3C
+   constant K28_2_C : slv(7 downto 0)  := "01011100";  -- K28.2, 0x5C
+   constant IDLE_C  : slv(15 downto 0) := (K28_2_C & K28_1_C);
 
    type StateType is (
       IDLE_S,
@@ -164,9 +110,8 @@ architecture rtl of BsaMpsMsgRxFramer is
 
    signal crcResult : slv(31 downto 0);
    signal overflow  : sl;
-   signal fifoDin   : slv(FIFO_WIDTH_C-1 downto 0);
-   signal fifoDout  : slv(FIFO_WIDTH_C-1 downto 0);
-   signal msg       : MsgType;
+   signal fifoDin   : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
+   signal fifoDout  : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
 
 begin
 
@@ -366,7 +311,7 @@ begin
          TPD_G        => TPD_G,
          BRAM_EN_G    => false,
          FWFT_EN_G    => true,
-         DATA_WIDTH_G => FIFO_WIDTH_C,
+         DATA_WIDTH_G => RX_MSG_FIFO_WIDTH_C,
          ADDR_WIDTH_G => 5)             -- 32 us buffer
       port map (
          rst      => rxRst,
@@ -381,10 +326,7 @@ begin
          dout     => fifoDout,
          valid    => fifoValid);
 
-   msg         <= fromSlv(fifoDout);
-   mpsPermit   <= msg.mpsPermit;
-   timeStamp   <= msg.timeStamp;
-   bsaQuantity <= msg.bsaQuantity;
+   remoteMsg <= fromSlv(fifoDout);
 
    -----------------------
    -- Configuration/Status

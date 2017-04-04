@@ -2,9 +2,9 @@
 -- File       : BsaMpsMsgRxFramerReg.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-16
+-- Last update: 2017-04-04
 -------------------------------------------------------------------------------
--- Description: TX Data Framer
+-- Description: RX Data Framer's register module
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
 -- It is subject to the license terms in the LICENSE.txt file found in the 
@@ -97,7 +97,7 @@ begin
    comb : process (axilReadMaster, axilRst, axilWriteMaster, packetRate, r,
                    rxBufStatusSync, sofRate, statusCnt, statusOut) is
       variable v      : RegType;
-      variable regCon : AxiLiteEndPointType;
+      variable axilEp : AxiLiteEndPointType;
    begin
       -- Latch the current value
       v := r;
@@ -114,26 +114,26 @@ begin
       end if;
 
       -- Determine the transaction type
-      axiSlaveWaitTxn(regCon, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
+      axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
       -- Map the read registers
       for i in STATUS_SIZE_C-1 downto 0 loop
-         axiSlaveRegisterR(regCon, toSlv((4*i), 12), 0, muxSlVectorArray(statusCnt, i));
+         axiSlaveRegisterR(axilEp, toSlv((4*i), 12), 0, muxSlVectorArray(statusCnt, i));
       end loop;
-      axiSlaveRegisterR(regCon, x"400", 0, statusOut);
-      axiSlaveRegisterR(regCon, x"404", 0, rxBufStatusSync);
-      axiSlaveRegisterR(regCon, x"410", 0, packetRate);
-      axiSlaveRegisterR(regCon, x"414", 0, sofRate);
+      axiSlaveRegisterR(axilEp, x"400", 0, statusOut);
+      axiSlaveRegisterR(axilEp, x"404", 0, rxBufStatusSync);
+      axiSlaveRegisterR(axilEp, x"410", 0, packetRate);
+      axiSlaveRegisterR(axilEp, x"414", 0, sofRate);
 
       -- Map the write registers
-      axiSlaveRegister(regCon, x"700", 0, v.rxPolarity);
-      axiSlaveRegister(regCon, x"7F0", 0, v.rollOverEn);
-      axiSlaveRegister(regCon, x"7F4", 0, v.cntRst);
-      axiSlaveRegister(regCon, x"7F8", 0, v.gtRst);
-      axiSlaveRegister(regCon, x"7FC", 0, v.hardRst);
+      axiSlaveRegister(axilEp, x"700", 0, v.rxPolarity);
+      axiSlaveRegister(axilEp, x"7F0", 0, v.rollOverEn);
+      axiSlaveRegister(axilEp, x"7F4", 0, v.cntRst);
+      axiSlaveRegister(axilEp, x"7F8", 0, v.gtRst);
+      axiSlaveRegister(axilEp, x"7FC", 0, v.hardRst);
 
       -- Closeout the transaction
-      axiSlaveDefault(regCon, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
 
       -- Synchronous Reset
       if (axilRst = '1') then
