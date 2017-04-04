@@ -8,9 +8,9 @@
 ## the terms contained in the LICENSE.txt file.
 ##############################################################################
 #schemaversion 3.0.0
-#once
+#once 000TopLevel.yaml
 #include AmcCarrierCore.yaml
-#include AppTop.yaml
+#include Application.yaml
 
 #MMIO range, will be attached to FPGA
 mmio: &mmio
@@ -25,27 +25,10 @@ mmio: &mmio
         at:
         offset: 0x00000000  
     ##################################################     
-    AppTop:
-      <<: *AppTop
+    Application:
+      <<: *Application
       at:
-        offset: 0x80000000
-      children: 
-        AppTopJesd:
-          children:
-            JesdRx:
-              instantiate: true              
-              metadata:
-                numRxLanes: &numRxLanes 4
-            JesdTx:
-              instantiate: true              
-              metadata: 
-                numTxLanes: &numTxLanes 2              
-        AppTopTrig:
-          children:
-            EvrV1Reg:
-              instantiate: false 
-            EvrV1Isr:
-              instantiate: false               
+        offset: 0x80000000             
     ################################################## 
   
 stream: &stream

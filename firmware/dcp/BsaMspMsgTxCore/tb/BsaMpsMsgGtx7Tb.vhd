@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgGtx7Tb.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-16
+-- Last update: 2017-04-04
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper Simulation Testbed
 -------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ use ieee.std_logic_arith.all;
 
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
+use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgGtx7Tb is end BsaMpsMsgGtx7Tb;
 
@@ -56,10 +57,8 @@ architecture testbed of BsaMpsMsgGtx7Tb is
    signal rxDecErr  : slv(1 downto 0)  := (others => '0');
    signal rxDispErr : slv(1 downto 0)  := (others => '0');
 
-   signal fifoValid   : sl                      := '0';
-   signal mpsPermit   : slv(3 downto 0)         := (others => '0');
-   signal timeStamp   : slv(63 downto 0)        := (others => '0');
-   signal bsaQuantity : Slv32Array(11 downto 0) := (others => (others => '0'));
+   signal fifoValid : sl       := '0';
+   signal remoteMsg : MsgType := MSG_INIT_C;
 
 begin
 
@@ -202,8 +201,6 @@ begin
          -- RX Frame Interface (axilClk domain)     
          fifoRd          => '1',
          fifoValid       => fifoValid,
-         mpsPermit       => mpsPermit,
-         timeStamp       => timeStamp,
-         bsaQuantity     => bsaQuantity);
+         remoteMsg       => remoteMsg);
 
 end testbed;

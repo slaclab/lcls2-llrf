@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
--- File       : TargetTemplate.vhd
+-- File       : AmcCarrierLlrf.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-02-04
--- Last update: 2017-02-07
+-- Last update: 2017-04-03
 -------------------------------------------------------------------------------
 -- Description: Firmware Target's Top Level
 -- 
@@ -29,7 +29,7 @@ use work.TimingPkg.all;
 use work.AmcCarrierPkg.all;
 use work.AppTopPkg.all;
 
-entity TargetTemplate is
+entity AmcCarrierLlrf is
    generic (
       TPD_G        : time := 1 ns;
       BUILD_INFO_G : BuildInfoType);
@@ -37,41 +37,11 @@ entity TargetTemplate is
       -----------------------
       -- Application Ports --
       -----------------------
-      -- AMC's JESD Ports
-      jesdRxP          : in    Slv7Array(1 downto 0);
-      jesdRxN          : in    Slv7Array(1 downto 0);
-      jesdTxP          : out   Slv7Array(1 downto 0);
-      jesdTxN          : out   Slv7Array(1 downto 0);
-      jesdClkP         : in    Slv3Array(1 downto 0);
-      jesdClkN         : in    Slv3Array(1 downto 0);
-      -- AMC's JTAG Ports
-      jtagPri          : inout Slv5Array(1 downto 0);
-      jtagSec          : inout Slv5Array(1 downto 0);
-      -- AMC's FPGA Clock Ports
-      fpgaClkP         : inout Slv2Array(1 downto 0);
-      fpgaClkN         : inout Slv2Array(1 downto 0);
-      -- AMC's System Reference Ports
-      sysRefP          : inout Slv4Array(1 downto 0);
-      sysRefN          : inout Slv4Array(1 downto 0);
-      -- AMC's Sync Ports
-      syncInP          : inout Slv4Array(1 downto 0);
-      syncInN          : inout Slv4Array(1 downto 0);
-      syncOutP         : inout Slv10Array(1 downto 0);
-      syncOutN         : inout Slv10Array(1 downto 0);
-      -- AMC's Spare Ports
-      spareP           : inout Slv16Array(1 downto 0);
-      spareN           : inout Slv16Array(1 downto 0);
-      -- RTM's Low Speed Ports
-      rtmLsP           : inout slv(53 downto 0);
-      rtmLsN           : inout slv(53 downto 0);
-      -- RTM's High Speed Ports
-      rtmHsRxP         : in    sl;
-      rtmHsRxN         : in    sl;
-      rtmHsTxP         : out   sl;
-      rtmHsTxN         : out   sl;
-      -- RTM's Clock Reference 
-      genClkP          : in    sl;
-      genClkN          : in    sl;
+      -- Remote LLRF BSA/MPS Ports
+      gtRxP            : in    slv(1 downto 0);
+      gtRxN            : in    slv(1 downto 0);
+      gtTxP            : out   slv(1 downto 0);
+      gtTxN            : out   slv(1 downto 0);
       ----------------
       -- Core Ports --
       ----------------   
@@ -143,9 +113,9 @@ entity TargetTemplate is
       -- SYSMON Ports
       vPIn             : in    sl;
       vNIn             : in    sl);
-end TargetTemplate;
+end AmcCarrierLlrf;
 
-architecture top_level of TargetTemplate is
+architecture top_level of AmcCarrierLlrf is
 
    -- AXI-Lite Interface (axilClk domain)
    signal axilClk              : sl;
@@ -159,6 +129,7 @@ architecture top_level of TargetTemplate is
    signal timingRst            : sl;
    signal timingBus            : TimingBusType;
    signal timingPhy            : TimingPhyType;
+   signal timingRefClk         : sl;
    signal timingPhyClk         : sl;
    signal timingPhyRst         : sl;
    -- Diagnostic Interface (diagnosticClk domain)
@@ -199,27 +170,9 @@ architecture top_level of TargetTemplate is
 
 begin
 
-   U_AppTop : entity work.AppTop
+   U_App : entity work.Application
       generic map (
-         TPD_G                => TPD_G,
-         MR_LCLS_APP_G        => false,          -- Configured by application
-         -- JESD Generics
-         JESD_DRP_EN_G        => false,          -- Configured by application
-         JESD_RX_LANE_G       => (others => 4),  -- Configured by application
-         JESD_TX_LANE_G       => (others => 2),  -- Configured by application
-         JESD_RX_POLARITY_G   => (others => "0000000"),  -- Configured by application
-         JESD_TX_POLARITY_G   => (others => "0000000"),  -- Configured by application
-         JESD_RX_ROUTES_G     => (others => JESD_CH0_CH1_SWAP_C),  -- Configured by application
-         JESD_TX_ROUTES_G     => (others => JESD_ROUTES_INIT_C),  -- Configured by application         
-         JESD_REF_SEL_G       => (others => DEV_CLK2_SEL_C),  -- Configured by application
-         -- Signal Generator Generics
-         SIG_GEN_SIZE_G       => (others => 0),  -- Configured by application
-         SIG_GEN_ADDR_WIDTH_G => (others => 9),  -- Configured by application
-         SIG_GEN_LANE_MODE_G  => (others => "0000000"),  -- Configured by application
-         -- Triggering Generics
-         TRIG_SIZE_G          => 4,     -- Configured by application
-         TRIG_DELAY_WIDTH_G   => 32,    -- Configured by application
-         TRIG_PULSE_WIDTH_G   => 32)    -- Configured by application
+         TPD_G => TPD_G)
       port map (
          ----------------------
          -- Top Level Interface
@@ -236,6 +189,7 @@ begin
          timingRst            => timingRst,
          timingBus            => timingBus,
          timingPhy            => timingPhy,
+         timingRefClk         => timingRefClk,
          timingPhyClk         => timingPhyClk,
          timingPhyRst         => timingPhyRst,
          -- Diagnostic Interface (diagnosticClk domain)
@@ -277,46 +231,24 @@ begin
          -- Application Ports --
          -----------------------
          -- AMC's JESD Ports
-         jesdRxP              => jesdRxP,
-         jesdRxN              => jesdRxN,
-         jesdTxP              => jesdTxP,
-         jesdTxN              => jesdTxN,
-         jesdClkP             => jesdClkP,
-         jesdClkN             => jesdClkN,
-         -- AMC's JTAG Ports
-         jtagPri              => jtagPri,
-         jtagSec              => jtagSec,
-         -- AMC's FPGA Clock Ports
-         fpgaClkP             => fpgaClkP,
-         fpgaClkN             => fpgaClkN,
-         -- AMC's System Reference Ports
-         sysRefP              => sysRefP,
-         sysRefN              => sysRefN,
-         -- AMC's Sync Ports
-         syncInP              => syncInP,
-         syncInN              => syncInN,
-         syncOutP             => syncOutP,
-         syncOutN             => syncOutN,
-         -- AMC's Spare Ports
-         spareP               => spareP,
-         spareN               => spareN,
-         -- RTM's Low Speed Ports
-         rtmLsP               => rtmLsP,
-         rtmLsN               => rtmLsN,
-         -- RTM's High Speed Ports
-         rtmHsRxP             => rtmHsRxP,
-         rtmHsRxN             => rtmHsRxN,
-         rtmHsTxP             => rtmHsTxP,
-         rtmHsTxN             => rtmHsTxN,
-         -- RTM's Clock Reference 
-         genClkP              => genClkP,
-         genClkN              => genClkN);
+         gtRxP                => gtRxP,
+         gtRxN                => gtRxN,
+         gtTxP                => gtTxP,
+         gtTxN                => gtTxN);
 
-   U_Core : entity work.AmcCarrierCoreBase
+   U_Core : entity work.AmcCarrierCoreAdv
       generic map (
-         TPD_G        => TPD_G,
-         BUILD_INFO_G => BUILD_INFO_G,
-         APP_TYPE_G   => APP_NULL_TYPE_C)  -- Configured by application (refer to AmcCarrierPkg for list of all application types
+         TPD_G                 => TPD_G,
+         BUILD_INFO_G          => BUILD_INFO_G,
+         SIM_SPEEDUP_G         => false,  -- false = Normal Operation, true = simulation
+         DISABLE_BSA_G         => false,  -- false = includes BSA engine, true = doesn't build the BSA engine
+         RTM_ETH_G             => false,  -- false = 10GbE over backplane, true = 1GbE over RTM
+         TIME_GEN_APP_G        => false,  -- false = normal application, true = timing generator application
+         TIME_GEN_EXTREF_G     => false,  -- false = normal application, true = timing generator using external reference
+         FSBL_G                => false,  -- false = Normal Operation, true = First Stage Boot loader
+         APP_TYPE_G            => APP_LLRF_TYPE_C,
+         ETH_USR_FRAME_LIMIT_G => 4096,   -- 4kB  
+         MPS_SLOT_G            => false)  -- false = Normal Operation, true = MPS message concentrator (Slot#2 only)            
       port map (
          ----------------------
          -- Top Level Interface
@@ -333,6 +265,7 @@ begin
          timingRst            => timingRst,
          timingBus            => timingBus,
          timingPhy            => timingPhy,
+         timingRefClk         => timingRefClk,
          timingPhyClk         => timingPhyClk,
          timingPhyRst         => timingPhyRst,
          -- Diagnostic Interface (diagnosticClk domain)

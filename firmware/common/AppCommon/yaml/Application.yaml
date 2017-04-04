@@ -8,11 +8,11 @@
 ## the terms contained in the LICENSE.txt file.
 ##############################################################################
 #schemaversion 3.0.0
-#once
+#once Application.yaml
 #include AmcGenericAdcDacCore.yaml
 
-AppCore: &AppCore 
-  name: AppCore
+AppCore: &Application 
+  name: Application
   description: AMC Carrier Application Core
   size: 0x00100000
   class: MMIODev

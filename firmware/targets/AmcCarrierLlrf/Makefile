@@ -1,3 +1,4 @@
+export GIT_BYPASS = 1
 ##########################################################################################
 # Applications must define the 32-bitFirmware Version Number
 ##########################################################################################
@@ -17,7 +18,7 @@ export PRJ_VERSION = 0x00000001
 # Note: (AMC_ADV_BUILD = 1) requires a munch longer build time
 ##########################################################################################
 # AMC_ADV_BUILD is defined by application
-export AMC_ADV_BUILD = 0
+export AMC_ADV_BUILD = 1
 
 ##########################################################################################
 # Applications must define if using zone3 (RTM) ETH (instead of zone2 ETH)
@@ -37,11 +38,11 @@ export RTM_ETH = 0
 ##########################################################################################
 
 # AMC_TYPE_BAY0 & AMC_INTF_BAY0 are defined by application
-export AMC_TYPE_BAY0 = AmcGenericAdcDac
+export AMC_TYPE_BAY0 = AmcMpsSfp
 export AMC_INTF_BAY0 = 
 
 # AMC_TYPE_BAY1 & AMC_INTF_BAY1 are defined by application
-export AMC_TYPE_BAY1 = AmcGenericAdcDac
+export AMC_TYPE_BAY1 = AmcMpsSfp
 export AMC_INTF_BAY1 = 
 
 # RTM_TYPE & RTM_INTF are defined by application
@@ -53,14 +54,14 @@ export RTM_INTF = Version1
 ##########################################################################################
 
 # COMMON_FILE is defined by application
-export COMMON_FILE = CommonTemplate
+export COMMON_FILE = AppCommon
 
 ##########################################################################################
 # Application have the option to remove unused source code from Vivado project
 #     If REMOVE_UNUSED_CODE = 0, all source code is kept after importing to Vivado project
 #     If REMOVE_UNUSED_CODE = 1, all unused source code is removed from Vivado project
 ##########################################################################################
-export REMOVE_UNUSED_CODE = 1
+export REMOVE_UNUSED_CODE = 0
 
 ##########################################################################################
 ############################  DO NOT EDIT THE CODE BELOW  ################################

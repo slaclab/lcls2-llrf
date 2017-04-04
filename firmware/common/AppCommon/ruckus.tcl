@@ -1,15 +1,11 @@
 # Load RUCKUS library
 source -quiet $::env(RUCKUS_DIR)/vivado_proc.tcl
 
-# Get the family type
-set family [getFpgaFamily]
+# Load the RTL souce code
+loadSource -dir "$::DIR_PATH/core/"   
+  
+# Use the IP core for GTH module
+# loadSource -path "$::DIR_PATH/ip/BsaMpsGthCore.dcp"
+loadIpCore -path "$::DIR_PATH/ip/BsaMpsGthCore.xci"; # Using the pre-built .DCP file
 
-if { ${family} == "kintex7" } {
-   loadSource -dir "$::DIR_PATH/BsaMpsMsgTx/"
-}
-
-if { ${family} == "kintexu" } {
-   loadSource -dir "$::DIR_PATH/BsaMpsMsgRx/"
-   loadSource -dir "$::DIR_PATH/core/"   
-}
 
