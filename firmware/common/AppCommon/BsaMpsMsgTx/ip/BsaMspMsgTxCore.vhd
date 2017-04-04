@@ -2,7 +2,7 @@
 -- File       : BsaMspMsgTxCore.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-16
+-- Last update: 2017-04-04
 -------------------------------------------------------------------------------
 -- Description: Core Module
 -------------------------------------------------------------------------------
@@ -64,23 +64,21 @@ end BsaMspMsgTxCore;
 
 architecture mapping of BsaMspMsgTxCore is
 
-   signal txClk      : sl;
-   signal txRst      : sl;
-   signal axisMaster : AxiStreamMasterType;
-   signal axisSlave  : AxiStreamSlaveType;
-   signal txData     : slv(15 downto 0);
-   signal txdataK    : slv(1 downto 0);
+   signal txClk   : sl;
+   signal txRst   : sl;
+   signal txData  : slv(15 downto 0);
+   signal txdataK : slv(1 downto 0);
 
 begin
 
-   ---------------------
-   -- Data Packer Module
-   ---------------------
-   U_Packer : entity work.BsaMpsMsgTxPacker
+   ------------
+   -- TX Module
+   ------------
+   U_Tx : entity work.BsaMpsMsgTxFramer
       generic map (
          TPD_G => TPD_G)
       port map (
-         -- BSA/MPS Interface
+         -- BSA/MPS Interface (usrClk domain)
          usrClk        => usrClk,
          usrRst        => usrRst,
          timingStrobe  => timingStrobe,
@@ -98,25 +96,11 @@ begin
          bsaQuantity10 => bsaQuantity10,
          bsaQuantity11 => bsaQuantity11,
          mpsPermit     => mpsPermit,
-         -- TX Data Interface
+         -- TX Data Interface (txClk domain)
          txClk         => txClk,
          txRst         => txRst,
-         mAxisMaster   => axisMaster,
-         mAxisSlave    => axisSlave);
-
-   ---------------------
-   -- Data Framer Module
-   ---------------------
-   U_Framer : entity work.BsaMpsMsgTxFramer
-      generic map (
-         TPD_G => TPD_G)
-      port map (
-         txClk       => txClk,
-         txRst       => txRst,
-         sAxisMaster => axisMaster,
-         sAxisSlave  => axisSlave,
-         txData      => txData,
-         txdataK     => txdataK);
+         txData        => txData,
+         txdataK       => txdataK);
 
    -------------
    -- GTX Module
