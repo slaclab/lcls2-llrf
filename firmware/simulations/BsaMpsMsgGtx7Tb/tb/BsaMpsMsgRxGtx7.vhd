@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxGtx7.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-03-15
+-- Last update: 2017-04-04
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper
 -------------------------------------------------------------------------------
@@ -21,6 +21,9 @@ use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
 use work.StdRtlPkg.all;
+
+library UNISIM;
+use UNISIM.VCOMPONENTS.all;
 
 entity BsaMpsMsgRxGtx7 is
    generic (
@@ -50,7 +53,7 @@ end BsaMpsMsgRxGtx7;
 
 architecture mapping of BsaMpsMsgRxGtx7 is
 
-   constant DURATION_100MS_C : positive := ite(SIMULATION_G,255,25000000);
+   constant DURATION_100MS_C : positive := ite(SIMULATION_G, 255, 25000000);
    constant DURATION_1S_C    : positive := (10*DURATION_100MS_C);
 
    signal cnt           : slv(31 downto 0) := (others => '0');
@@ -58,7 +61,7 @@ architecture mapping of BsaMpsMsgRxGtx7 is
    signal dataK         : slv(1 downto 0)  := (others => '0');
    signal decErr        : slv(1 downto 0)  := (others => '0');
    signal dispErr       : slv(1 downto 0)  := (others => '0');
-   signal rxBuff        : slv(2 downto 0)  := (others => '0');   
+   signal rxBuff        : slv(2 downto 0)  := (others => '0');
    signal rxRstDone     : sl               := '0';
    signal linkUp        : sl               := '0';
    signal dataValid     : sl               := '0';

@@ -57,8 +57,8 @@ architecture testbed of BsaMpsMsgGtx7Tb is
    signal rxDecErr  : slv(1 downto 0)  := (others => '0');
    signal rxDispErr : slv(1 downto 0)  := (others => '0');
 
-   signal fifoValid : sl       := '0';
-   signal remoteMsg : MsgType := MSG_INIT_C;
+   signal remoteValid : sl      := '0';
+   signal remoteMsg   : MsgType := MSG_INIT_C;
 
 begin
 
@@ -199,8 +199,8 @@ begin
          cPllLock        => '1',
          gtRst           => open,
          -- RX Frame Interface (axilClk domain)     
-         fifoRd          => '1',
-         fifoValid       => fifoValid,
+         remoteRd        => '1',
+         remoteValid     => remoteValid,
          remoteMsg       => remoteMsg);
 
 end testbed;

@@ -22,6 +22,9 @@ use ieee.std_logic_unsigned.all;
 
 use work.StdRtlPkg.all;
 
+library UNISIM;
+use UNISIM.VCOMPONENTS.all;
+
 entity BsaMpsGthCoreWrapper is
    generic (
       TPD_G        : time    := 1 ns;
@@ -54,6 +57,9 @@ entity BsaMpsGthCoreWrapper is
 end BsaMpsGthCoreWrapper;
 
 architecture mapping of BsaMpsGthCoreWrapper is
+
+   constant DURATION_100MS_C : positive := ite(SIMULATION_G, 255, 18550000);
+   constant DURATION_1S_C    : positive := (10*DURATION_100MS_C);
 
    component BsaMpsGthCore
       port (
@@ -106,10 +112,24 @@ architecture mapping of BsaMpsGthCoreWrapper is
          txpmaresetdone_out                 : out std_logic_vector(0 downto 0));
    end component;
 
+   signal gtwiz_reset_rx_cdr_stable_out : slv(0 downto 0)  := (others => '0');
+   signal rxbyteisaligned_out           : slv(0 downto 0)  := (others => '0');
+   signal rxbyterealign_out             : slv(0 downto 0)  := (others => '0');
+   signal rxclkcorcnt_out               : slv(1 downto 0)  := (others => '0');
+   signal rxcommadet_out                : slv(0 downto 0)  := (others => '0');
+   signal rxctrl0_out                   : slv(15 downto 2) := (others => '0');
+   signal rxctrl1_out                   : slv(15 downto 2) := (others => '0');
+   signal rxctrl2_out                   : slv(7 downto 0)  := (others => '0');
+   signal rxctrl3_out                   : slv(7 downto 2)  := (others => '0');
+   signal rxoutclk_out                  : slv(0 downto 0)  := (others => '0');
+   signal rxpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
+   signal txpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
+
    signal data          : slv(15 downto 0) := (others => '0');
    signal dataK         : slv(1 downto 0)  := (others => '0');
    signal decErr        : slv(1 downto 0)  := (others => '0');
    signal dispErr       : slv(1 downto 0)  := (others => '0');
+   signal rxBuff        : slv(2 downto 0)  := (others => '0');
    signal cnt           : slv(31 downto 0) := (others => '0');
    signal clk           : sl               := '0';
    signal txOutClkOut   : sl               := '0';
@@ -120,6 +140,9 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal wdtRst        : sl               := '0';
    signal wdtReset      : sl               := '0';
    signal wdtRstOneShot : sl               := '0';
+   signal rxRstDone     : sl               := '0';
+   signal txRstDone     : sl               := '0';
+
 
 begin
 
@@ -142,20 +165,26 @@ begin
 
       rxClk <= clk;
       rxRst <= rxReset;
-
-      U_BUFG : BUFG
+      
+      U_BUFG_GT : BUFG_GT
          port map (
-            I => txOutClkOut,
-            O => clk);
+            I       => txOutClkOut,
+            CE      => '1',
+            CEMASK  => '1',
+            CLR     => '0',
+            CLRMASK => '1',
+            DIV     => "000",              -- Divide by 1
+            O       => clk);      
 
       txReset <= gtRst or txRst;
 
-      rxValid   <= linkUp;
-      rxData    <= data    when(linkUp = '1') else (others => '0');
-      rxDataK   <= dataK   when(linkUp = '1') else (others => '0');
-      rxDecErr  <= decErr  when(linkUp = '1') else (others => '0');
-      rxDispErr <= dispErr when(linkUp = '1') else (others => '0');
-      dataValid <= not (uOr(decErr) or uOr(dispErr));
+      rxValid     <= linkUp;
+      rxData      <= data    when(linkUp = '1') else (others => '0');
+      rxDataK     <= dataK   when(linkUp = '1') else (others => '0');
+      rxDecErr    <= decErr  when(linkUp = '1') else (others => '0');
+      rxDispErr   <= dispErr when(linkUp = '1') else (others => '0');
+      rxBufStatus <= rxBuff  when(linkUp = '1') else (others => '0');
+      dataValid   <= not (uOr(decErr) or uOr(dispErr));
 
       process(clk)
       begin
@@ -203,7 +232,7 @@ begin
             gtwiz_reset_tx_datapath_in(0)         => txReset,
             gtwiz_reset_rx_pll_and_datapath_in(0) => '0',
             gtwiz_reset_rx_datapath_in(0)         => rxReset,
-            gtwiz_reset_rx_cdr_stable_out(0)      => open,
+            gtwiz_reset_rx_cdr_stable_out         => gtwiz_reset_rx_cdr_stable_out,
             gtwiz_reset_tx_done_out(0)            => txRstDone,
             gtwiz_reset_rx_done_out(0)            => rxRstDone,
             gtwiz_userdata_tx_in                  => txData,
@@ -230,22 +259,22 @@ begin
             txusrclk2_in(0)                       => txClk,
             gthtxn_out(0)                         => gtTxN,
             gthtxp_out(0)                         => gtTxP,
-            rxbufstatus_out                       => rxBufStatus,
-            rxbyteisaligned_out                   => open,
-            rxbyterealign_out                     => open,
-            rxclkcorcnt_out                       => open,
-            rxcommadet_out                        => open,
+            rxbufstatus_out                       => rxBuff,
+            rxbyteisaligned_out                   => rxbyteisaligned_out,
+            rxbyterealign_out                     => rxbyterealign_out,
+            rxclkcorcnt_out                       => rxclkcorcnt_out,
+            rxcommadet_out                        => rxcommadet_out,
             rxctrl0_out(1 downto 0)               => dataK,
-            rxctrl0_out(15 downto 2)              => open,
+            rxctrl0_out(15 downto 2)              => rxctrl0_out,
             rxctrl1_out(1 downto 0)               => dispErr,
-            rxctrl1_out(15 downto 2)              => open,
-            rxctrl2_out                           => open,
+            rxctrl1_out(15 downto 2)              => rxctrl1_out,
+            rxctrl2_out                           => rxctrl2_out,
             rxctrl3_out(1 downto 0)               => decErr,
-            rxctrl3_out(7 downto 2)               => open,
-            rxoutclk_out(0)                       => open,
-            rxpmaresetdone_out(0)                 => open,
+            rxctrl3_out(7 downto 2)               => rxctrl3_out,
+            rxoutclk_out                          => rxoutclk_out,
+            rxpmaresetdone_out                    => rxpmaresetdone_out,
             txoutclk_out(0)                       => txOutClkOut,
-            txpmaresetdone_out(0)                 => open);
+            txpmaresetdone_out                    => txpmaresetdone_out);
    end generate;
 
 end mapping;

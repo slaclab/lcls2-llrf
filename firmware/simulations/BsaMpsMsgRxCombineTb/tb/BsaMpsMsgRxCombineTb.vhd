@@ -22,6 +22,8 @@ use ieee.std_logic_arith.all;
 
 use work.StdRtlPkg.all;
 use work.AxiLitePkg.all;
+use work.TimingPkg.all;
+use work.AmcCarrierPkg.all;
 use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxCombineTb is end BsaMpsMsgRxCombineTb;
@@ -33,12 +35,14 @@ architecture testbed of BsaMpsMsgRxCombineTb is
    constant TIMEOUT_C    : natural := 185;  -- ~ 1MHz strobe    
 
    type RegType is record
-      timingBus : TimingBusType;
-      timer     : natural range 0 to TIMEOUT_C;
+      localTiming  : TimingBusType;
+      remoteTiming : TimingBusType;
+      timer        : natural range 0 to TIMEOUT_C;
    end record RegType;
    constant REG_INIT_C : RegType := (
-      timingBus  => TIMING_BUS_INIT_C,
-      timer  => 0);
+      localTiming  => TIMING_BUS_INIT_C,
+      remoteTiming => TIMING_BUS_INIT_C,
+      timer        => 0);
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -46,15 +50,15 @@ architecture testbed of BsaMpsMsgRxCombineTb is
    signal clk : sl := '0';
    signal rst : sl := '0';
 
-   signal linkP : slv(1 downto 0)       := (others => '0');
-   signal linkN : slv(1 downto 0)       := (others => '1');
+   signal linkP : slv(1 downto 0) := (others => '0');
+   signal linkN : slv(1 downto 0) := (others => '1');
 
-   signal txData    : slv(15 downto 0) := (others => '0');
-   signal txDataK   : slv(1 downto 0)  := (others => '0');
+   signal txData  : slv(15 downto 0) := (others => '0');
+   signal txDataK : slv(1 downto 0)  := (others => '0');
 
-   signal fifoRd    : slv(1 downto 0)       := (others => '0');
-   signal fifoValid : slv(1 downto 0)       := (others => '0');
-   signal remoteMsg : MsgArray(1 downto 0) :=(others =>MSG_INIT_C);
+   signal remoteRd    : slv(1 downto 0)      := (others => '0');
+   signal remoteValid : slv(1 downto 0)      := (others => '0');
+   signal remoteMsg   : MsgArray(1 downto 0) := (others => MSG_INIT_C);
 
    signal diagnosticBus : DiagnosticBusType := DIAGNOSTIC_BUS_INIT_C;
 
@@ -76,20 +80,25 @@ begin
       v := r;
 
       -- Reset strobes
-      v.timingBus.strobe := '0';
-      
+      v.localTiming.strobe  := '0';
+      v.remoteTiming.strobe := '0';
+
       -- Set valid timing link
-      v.timingBus.valid     := '1';
-      v.timingBus.v2.linkUp := '1';
-      
+      v.localTiming.valid      := '1';
+      v.remoteTiming.valid     := '1';
+      v.localTiming.v2.linkUp  := '1';
+      v.remoteTiming.v2.linkUp := '1';
+
       -- Check the timer
       if (r.timer = TIMEOUT_C) then
          -- Reset the counter
-         v.timer  := 0;
+         v.timer                          := 0;
          -- Increment the counter
-         v.timingBus.message.timeStamp    := r.timingBus.message.timeStamp + 1;
+         v.localTiming.message.timeStamp  := r.localTiming.message.timeStamp + 1;
+         v.remoteTiming.message.timeStamp := r.remoteTiming.message.timeStamp + 1;
          -- Set the flag
-         v.timingBus.strobe := '1';
+         v.localTiming.strobe             := '1';
+         v.remoteTiming.strobe            := '1';
       else
          -- Increment the counter
          v.timer := r.timer +1;
@@ -98,6 +107,9 @@ begin
       -- Reset
       if (rst = '1') then
          v := REG_INIT_C;
+      -- -- Remote ahead of local
+      -- v.localTiming.message.timeStamp  := toSlv(8, 64);  -- Added misalignment offsets to check BsaMpsMsgRxCombine's recovery function
+      -- v.remoteTiming.message.timeStamp := toSlv(16, 64);  -- Added misalignment offsets to check BsaMpsMsgRxCombine's recovery function         
       end if;
 
       -- Register the variable for next clock cycle
@@ -117,26 +129,26 @@ begin
    ---------------------
    U_Tx : entity work.BsaMpsMsgTxFramer
       generic map (
-         TPD_G                 => TPD_G)
+         TPD_G => TPD_G)
       port map (
          -- BSA/MPS Interface (usrClk domain)
          usrClk        => clk,
          usrRst        => rst,
-         timingStrobe  => r.timingBus.strobe,
-         timeStamp     => r.timingBus.message.timeStamp,
-         bsaQuantity0  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity1  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity2  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity3  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity4  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity5  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity6  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity7  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity8  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity9  => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity10 => r.timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity11 => r.timingBus.message.timeStamp(31 downto 0),
-         mpsPermit     => r.timingBus.message.timeStamp(3 downto 0),
+         timingStrobe  => r.remoteTiming.strobe,
+         timeStamp     => r.remoteTiming.message.timeStamp,
+         bsaQuantity0  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity1  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity2  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity3  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity4  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity5  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity6  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity7  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity8  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity9  => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity10 => r.remoteTiming.message.timeStamp(31 downto 0),
+         bsaQuantity11 => r.remoteTiming.message.timeStamp(31 downto 0),
+         mpsPermit     => r.remoteTiming.message.timeStamp(3 downto 0),
          -- TX Data Interface (txClk domain)
          txClk         => clk,
          txRst         => rst,
@@ -149,8 +161,8 @@ begin
    GEN_VEC : for i in 1 downto 0 generate
       U_BsaMpsMsgRx : entity work.BsaMpsMsgRxCore
          generic map (
-            TPD_G            => TPD_G,
-            SIMULATION_G     => true)
+            TPD_G        => TPD_G,
+            SIMULATION_G => true)
          port map (
             -- AXI-Lite Interface (axilClk domain)
             axilClk         => clk,
@@ -160,8 +172,8 @@ begin
             axilWriteMaster => AXI_LITE_WRITE_MASTER_INIT_C,
             axilWriteSlave  => open,
             -- RX Frame Interface (axilClk domain)     
-            fifoRd          => fifoRd(i),
-            fifoValid       => fifoValid(i),
+            remoteRd        => remoteRd(i),
+            remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
             -- TX Data Interface (txClk domain)
             txClk           => clk,
@@ -169,7 +181,7 @@ begin
             txData          => txData,
             txDataK         => txDataK,
             -- Remote LLRF BSA/MPS Ports
-            refClk          => clk,
+            gtRefClk        => clk,
             gtRxP           => linkP(i),
             gtRxN           => linkN(i),
             gtTxP           => linkP(i),
@@ -181,8 +193,8 @@ begin
    ------------------------------
    U_Combine : entity work.BsaMpsMsgRxCombine
       generic map (
-         TPD_G            => TPD_G,
-         SIMULATION_G     => true)
+         TPD_G        => TPD_G,
+         SIMULATION_G => true)
       port map (
          -- AXI-Lite Interface (axilClk domain)
          axilClk         => clk,
@@ -192,11 +204,11 @@ begin
          axilWriteMaster => AXI_LITE_WRITE_MASTER_INIT_C,
          axilWriteSlave  => open,
          -- RX Frame Interface
-         fifoRd          => fifoRd,
-         fifoValid       => fifoValid,
+         remoteRd        => remoteRd,
+         remoteValid     => remoteValid,
          remoteMsg       => remoteMsg,
          -- Timing Interface
-         timingBus       => r.timingBus,
+         timingBus       => r.localTiming,
          -- Diagnostic Interface
          diagnosticBus   => diagnosticBus);
 

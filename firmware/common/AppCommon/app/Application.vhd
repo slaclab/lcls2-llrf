@@ -112,9 +112,9 @@ architecture mapping of Application is
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
 
-   signal fifoRd    : slv(1 downto 0);
-   signal fifoValid : slv(1 downto 0);
-   signal remoteMsg : MsgArray(1 downto 0);
+   signal remoteRd    : slv(1 downto 0);
+   signal remoteValid : slv(1 downto 0);
+   signal remoteMsg   : MsgArray(1 downto 0);
 
 begin
 
@@ -184,11 +184,11 @@ begin
             axilWriteMaster => axilWriteMasters(i),
             axilWriteSlave  => axilWriteSlaves(i),
             -- RX Frame Interface (axilClk domain)     
-            fifoRd          => fifoRd(i),
-            fifoValid       => fifoValid(i),
+            remoteRd        => remoteRd(i),
+            remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
             -- Remote LLRF BSA/MPS Ports
-            refClk          => timingRefClk,
+            gtRefClk        => timingRefClk,
             gtRxP           => gtRxP(i),
             gtRxN           => gtRxN(i),
             gtTxP           => gtTxP(i),
@@ -212,8 +212,8 @@ begin
          axilWriteMaster => axilWriteMasters(COMBINE_INDEX_C),
          axilWriteSlave  => axilWriteSlaves(COMBINE_INDEX_C),
          -- RX Frame Interface
-         fifoRd          => fifoRd,
-         fifoValid       => fifoValid,
+         remoteRd        => remoteRd,
+         remoteValid     => remoteValid,
          remoteMsg       => remoteMsg,
          -- Timing Interface
          timingBus       => timingBus,

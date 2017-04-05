@@ -51,8 +51,8 @@ entity BsaMpsMsgRxFramer is
       cPllLock        : in  sl;
       gtRst           : out sl;
       -- RX Frame Interface (axilClk domain)     
-      fifoRd          : in  sl;
-      fifoValid       : out sl;
+      remoteRd        : in  sl;
+      remoteValid     : out sl;
       remoteMsg       : out MsgType);
 end BsaMpsMsgRxFramer;
 
@@ -322,9 +322,9 @@ begin
          overflow => overflow,
          -- Read Ports
          rd_clk   => axilClk,
-         rd_en    => fifoRd,
+         rd_en    => remoteRd,
          dout     => fifoDout,
-         valid    => fifoValid);
+         valid    => remoteValid);
 
    remoteMsg <= fromSlv(fifoDout);
 

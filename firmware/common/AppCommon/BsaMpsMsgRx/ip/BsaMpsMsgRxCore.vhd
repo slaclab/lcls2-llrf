@@ -39,8 +39,8 @@ entity BsaMpsMsgRxCore is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
       -- RX Frame Interface (axilClk domain)     
-      fifoRd          : in  sl;
-      fifoValid       : out sl;
+      remoteRd        : in  sl;
+      remoteValid     : out sl;
       remoteMsg       : out MsgType;
       -- Simulation TX Data Interface (txClk domain)
       txClk           : in  sl               := '0';
@@ -48,7 +48,7 @@ entity BsaMpsMsgRxCore is
       txData          : in  slv(15 downto 0) := (others => '0');
       txDataK         : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
-      refClk          : in  sl;
+      gtRefClk        : in  sl;
       gtRxP           : in  sl;
       gtRxN           : in  sl;
       gtTxP           : out sl;
@@ -73,33 +73,33 @@ begin
 
    U_Gth : entity work.BsaMpsGthCoreWrapper
       generic map (
-         TPD_G            => TPD_G,
-         SIMULATION_G     => SIMULATION_G)
+         TPD_G        => TPD_G,
+         SIMULATION_G => SIMULATION_G)
       port map (
          -- RX Data Interface (rxClk domain)
-         rxClk           => rxClk,
-         rxRst           => rxRst,
-         rxValid         => rxValid,
-         rxData          => rxData,
-         rxdataK         => rxdataK,
-         rxDecErr        => rxDecErr,
-         rxDispErr       => rxDispErr,
-         rxBufStatus     => rxBufStatus,
-         rxPolarity      => rxPolarity,
-         cPllLock        => cPllLock,
-         gtRst           => gtRst,
+         rxClk       => rxClk,
+         rxRst       => rxRst,
+         rxValid     => rxValid,
+         rxData      => rxData,
+         rxdataK     => rxdataK,
+         rxDecErr    => rxDecErr,
+         rxDispErr   => rxDispErr,
+         rxBufStatus => rxBufStatus,
+         rxPolarity  => rxPolarity,
+         cPllLock    => cPllLock,
+         gtRst       => gtRst,
          -- TX Data Interface (txClk domain)
-         txClk           => clk,
-         txRst           => rst,
-         txData          => txData,
-         txDataK         => txDataK,
+         txClk       => txClk,
+         txRst       => txRst,
+         txData      => txData,
+         txDataK     => txDataK,
          -- Remote LLRF BSA/MPS Ports
-         refClk          => refClk,
-         stableClk       => axilClk,
-         gtRxP           => gtRxP,
-         gtRxN           => gtRxN,
-         gtTxP           => gtTxP,
-         gtTxN           => gtTxN);
+         gtRefClk    => gtRefClk,
+         stableClk   => axilClk,
+         gtRxP       => gtRxP,
+         gtRxN       => gtRxN,
+         gtTxP       => gtTxP,
+         gtTxN       => gtTxN);
 
    U_RxFramer : entity work.BsaMpsMsgRxFramer
       generic map (
@@ -128,8 +128,8 @@ begin
          cPllLock        => cPllLock,
          gtRst           => gtRst,
          -- RX Frame Interface (axilClk domain)     
-         fifoRd          => fifoRd,
-         fifoValid       => fifoValid,
+         remoteRd        => remoteRd,
+         remoteValid     => remoteValid,
          remoteMsg       => remoteMsg);
 
 end mapping;
