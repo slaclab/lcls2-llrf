@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
--- File       : BsaMpsMsgRxCore.vhd
+-- File       : BsaMpsGthCoreWrapper.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: Wrapper for BsaMpsGthCore
 -------------------------------------------------------------------------------
@@ -40,11 +40,13 @@ entity BsaMpsGthCoreWrapper is
       rxDispErr   : out slv(1 downto 0);
       rxBufStatus : out slv(2 downto 0);
       rxPolarity  : in  sl;
+      txPolarity  : in  sl;
+      loopback    : in  sl;
       cPllLock    : out sl;
       gtRst       : in  sl;
-      -- Simulation TX Data Interface (txClk domain)
-      txClk       : in  sl               := '0';
-      txRst       : in  sl               := '0';
+      -- EMU TX Data Interface (txClk domain)
+      txClk       : out sl;
+      txRst       : out sl;
       txData      : in  slv(15 downto 0) := (others => '0');
       txDataK     : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
@@ -124,6 +126,7 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal rxoutclk_out                  : slv(0 downto 0)  := (others => '0');
    signal rxpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
    signal txpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
+   signal loopback_in                   : slv(2 downto 0)  := (others => '0');
 
    signal data          : slv(15 downto 0) := (others => '0');
    signal dataK         : slv(1 downto 0)  := (others => '0');
@@ -134,7 +137,6 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal clk           : sl               := '0';
    signal txOutClkOut   : sl               := '0';
    signal rxReset       : sl               := '0';
-   signal txReset       : sl               := '0';
    signal linkUp        : sl               := '0';
    signal dataValid     : sl               := '0';
    signal wdtRst        : sl               := '0';
@@ -146,26 +148,27 @@ architecture mapping of BsaMpsGthCoreWrapper is
 
 begin
 
+   loopback_in <= '0' & loopback & '0';
+   txClk <= clk;
+   rxClk <= clk;
+   rxRst <= rxReset;   
+   
    GEN_SIM : if (SIMULATION_G = true) generate
-      rxClk       <= txClk;
-      rxRst       <= txRst;
-      rxValid     <= not(txRst);
+      clk         <= '0';
+      rxReset     <= '0';
+      rxValid     <= '1';
       rxData      <= txData;
       rxDataK     <= txDataK;
       rxDecErr    <= (others => '0');
       rxDispErr   <= (others => '0');
       rxBufStatus <= (others => '0');
-      cPllLock    <= not(txRst);
+      cPllLock    <= '1';
       gtTxP       <= '0';
       gtTxN       <= '1';
    end generate;
 
-
    GEN_REAL : if (SIMULATION_G = false) generate
 
-      rxClk <= clk;
-      rxRst <= rxReset;
-      
       U_BUFG_GT : BUFG_GT
          port map (
             I       => txOutClkOut,
@@ -173,10 +176,19 @@ begin
             CEMASK  => '1',
             CLR     => '0',
             CLRMASK => '1',
-            DIV     => "000",              -- Divide by 1
-            O       => clk);      
+            DIV     => "000",           -- Divide by 1
+            O       => clk);
 
-      txReset <= gtRst or txRst;
+      U_PwrUpRstTx : entity work.PwrUpRst
+         generic map(
+            TPD_G          => TPD_G,
+            IN_POLARITY_G  => '0',
+            OUT_POLARITY_G => '1',
+            DURATION_G     => DURATION_100MS_C)
+         port map (
+            arst   => txRstDone,
+            clk    => clk,
+            rstOut => txRst);
 
       rxValid     <= linkUp;
       rxData      <= data    when(linkUp = '1') else (others => '0');
@@ -204,10 +216,12 @@ begin
       end process;
 
       wdtReset <= (not(dataValid) and linkUp) or wdtRstOneShot;
-      U_PwrUpRst : entity work.PwrUpRst
+      U_PwrUpRstRx : entity work.PwrUpRst
          generic map(
-            TPD_G      => TPD_G,
-            DURATION_G => DURATION_100MS_C)
+            TPD_G          => TPD_G,
+            IN_POLARITY_G  => '1',
+            OUT_POLARITY_G => '1',
+            DURATION_G     => DURATION_100MS_C)
          port map (
             arst   => wdtReset,
             clk    => clk,
@@ -227,9 +241,9 @@ begin
             gtwiz_userclk_tx_active_in(0)         => '1',
             gtwiz_userclk_rx_active_in(0)         => '1',
             gtwiz_reset_clk_freerun_in (0)        => stableClk,
-            gtwiz_reset_all_in(0)                 => '0',
+            gtwiz_reset_all_in(0)                 => gtRst,
             gtwiz_reset_tx_pll_and_datapath_in(0) => '0',
-            gtwiz_reset_tx_datapath_in(0)         => txReset,
+            gtwiz_reset_tx_datapath_in(0)         => gtRst,
             gtwiz_reset_rx_pll_and_datapath_in(0) => '0',
             gtwiz_reset_rx_datapath_in(0)         => rxReset,
             gtwiz_reset_rx_cdr_stable_out         => gtwiz_reset_rx_cdr_stable_out,
@@ -241,7 +255,7 @@ begin
             gthrxn_in(0)                          => gtRxN,
             gthrxp_in(0)                          => gtRxP,
             gtrefclk0_in(0)                       => gtRefClk,
-            loopback_in                           => (others => '0'),
+            loopback_in                           => loopback_in,
             rx8b10ben_in(0)                       => '1',
             rxbufreset_in(0)                      => '0',
             rxcommadeten_in(0)                    => '1',
@@ -255,8 +269,8 @@ begin
             txctrl1_in                            => X"0000",
             txctrl2_in(1 downto 0)                => txDataK,
             txctrl2_in(7 downto 2)                => (others => '0'),
-            txusrclk_in(0)                        => txClk,
-            txusrclk2_in(0)                       => txClk,
+            txusrclk_in(0)                        => clk,
+            txusrclk2_in(0)                       => clk,
             gthtxn_out(0)                         => gtTxN,
             gthtxp_out(0)                         => gtTxP,
             rxbufstatus_out                       => rxBuff,

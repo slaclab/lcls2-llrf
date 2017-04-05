@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCombine.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: Combines the timingBus with the two remote links to form the 
 --              diagnosticBus message.
@@ -58,6 +58,8 @@ architecture rtl of BsaMpsMsgRxCombine is
       SEND_MSG_S);
 
    type RegType is record
+      cntRst         : sl;
+      dropCnt        : Slv32Array(1 downto 0);
       fifoRd         : sl;
       aligned        : slv(1 downto 0);
       sevr           : Slv2Array(1 downto 0);
@@ -70,7 +72,8 @@ architecture rtl of BsaMpsMsgRxCombine is
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-
+      cntRst         => '0',
+      dropCnt        => (others => x"0000_0000"),
       fifoRd         => '0',
       aligned        => (others => '0'),
       sevr           => (others => "11"),
@@ -135,6 +138,7 @@ begin
       v.remoteRd             := (others => '0');
       v.fifoRd               := '0';
       v.diagnosticBus.strobe := '0';
+      v.cntRst               := '0';
 
       -- Check if busy reading one of the FIFOs
       busy := uOr(r.remoteRd) or r.fifoRd or r.diagnosticBus.strobe;
@@ -224,16 +228,35 @@ begin
             v.diagnosticBus.data(31)      := x"0000_000" & remoteMsg(1).mpsPermit;
             -- Update the message field
             v.diagnosticBus.timingMessage := timingMessage;
+            -- Loop through the remote channels
+            for i in 1 downto 0 loop
+               -- Check for drop due to misalignment
+               if (r.aligned(i) = '0') then
+                  -- Increment the counter
+                  v.dropCnt(i) := r.dropCnt(i) + 1;
+               end if;
+            end loop;
             -- Next state
-            v.state                       := IDLE_S;
+            v.state := IDLE_S;
       ----------------------------------------------------------------------
       end case;
 
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
+      axiSlaveRegisterR(axilEp, x"700", 0, r.dropCnt(0));
+      axiSlaveRegisterR(axilEp, x"704", 0, r.dropCnt(1));
+
+      axiSlaveRegister(axilEp, x"FFC", 0, v.cntRst);
+
       -- Closeout the transaction
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
+
+      -- Check for counter reset
+      if (r.cntRst = '1') then
+         -- Reset the counters
+         v.dropCnt := (others => x"0000_0000");
+      end if;
 
       -- Synchronous Reset
       if (axilRst = '1') then

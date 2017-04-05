@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxFramerReg.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer's register module
 -------------------------------------------------------------------------------
@@ -39,6 +39,8 @@ entity BsaMpsMsgRxFramerReg is
       rxBufStatus     : in  slv(2 downto 0);
       cPllLock        : in  sl;
       rxPolarity      : out sl;
+      txPolarity      : out sl;
+      loopback        : out sl;
       fifoWr          : in  sl;
       overflow        : in  sl;
       errPktLen       : in  sl;
@@ -61,6 +63,8 @@ architecture rtl of BsaMpsMsgRxFramerReg is
    type RegType is record
       gtRst          : sl;
       rxPolarity     : sl;
+      txPolarity     : sl;
+      loopback       : sl;
       cntRst         : sl;
       rollOverEn     : slv(STATUS_SIZE_C-1 downto 0);
       hardRst        : sl;
@@ -71,6 +75,8 @@ architecture rtl of BsaMpsMsgRxFramerReg is
    constant REG_INIT_C : RegType := (
       gtRst          => '0',
       rxPolarity     => '0',
+      txPolarity     => '0',
+      loopback       => '0',
       cntRst         => '1',
       rollOverEn     => toSlv(1, STATUS_SIZE_C),
       hardRst        => '0',
@@ -127,6 +133,9 @@ begin
 
       -- Map the write registers
       axiSlaveRegister(axilEp, x"700", 0, v.rxPolarity);
+      axiSlaveRegister(axilEp, x"704", 0, v.txPolarity);
+      axiSlaveRegister(axilEp, x"708", 0, v.loopback);
+
       axiSlaveRegister(axilEp, x"7F0", 0, v.rollOverEn);
       axiSlaveRegister(axilEp, x"7F4", 0, v.cntRst);
       axiSlaveRegister(axilEp, x"7F8", 0, v.gtRst);
@@ -210,11 +219,15 @@ begin
    U_SyncOutVec : entity work.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
-         WIDTH_G => 1)
+         WIDTH_G => 3)
       port map (
          clk        => rxClk,
          dataIn(0)  => r.rxPolarity,
-         dataOut(0) => rxPolarity);
+         dataIn(1)  => r.txPolarity,
+         dataIn(2)  => r.loopback,
+         dataOut(0) => rxPolarity,
+         dataOut(1) => txPolarity,
+         dataOut(2) => loopback);
 
    gtRxFifoErr <= rxBufStatus(2) and rxLinkUp;
 

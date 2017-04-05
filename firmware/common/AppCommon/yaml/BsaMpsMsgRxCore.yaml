@@ -1,0 +1,57 @@
+##############################################################################
+## This file is part of 'LCLS2 LLRF Firmware'.
+## It is subject to the license terms in the LICENSE.txt file found in the 
+## top-level directory of this distribution and at: 
+##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
+## No part of 'LCLS2 LLRF Firmware', including this file, 
+## may be copied, modified, propagated, or distributed except according to 
+## the terms contained in the LICENSE.txt file.
+##############################################################################
+#schemaversion 3.0.0
+#once BsaMpsMsgRxCore.yaml
+
+BsaMpsMsgRxCore: &BsaMpsMsgRxCore
+  name: BsaMpsMsgRxCore
+  description: RX Link Module
+  class: MMIODev
+  configPrio: 1
+  size: 0x1000
+  children:
+    #########################################################
+    MsgDrop0Cnt:
+      at:
+        offset: 0x700
+      class: IntField
+      name: MsgDrop0Cnt
+      mode: RO
+      sizeBits: 32
+      description: MsgDrop0 Status Counter  
+    #########################################################
+    MsgDrop1Cnt:
+      at:
+        offset: 0x704
+      class: IntField
+      name: MsgDrop1Cnt
+      mode: RO
+      sizeBits: 32
+      description: MsgDrop1 Status Counter        
+    #########################################################
+    CntRst:
+      at:
+        offset: 0xFFC
+      class: IntField
+      name: CntRst
+      mode: WO
+      sizeBits: 1
+      description: Status Counter Reset   
+    #########################################################    
+    RstCnt:
+      name: RstCnt
+      class: SequenceCommand
+      at:
+        offset: 0x0
+      description: Reset all the status counters
+      sequence:
+      - entry: CntRst
+        value: 0x1      
+    #########################################################

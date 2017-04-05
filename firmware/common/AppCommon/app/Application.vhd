@@ -2,7 +2,7 @@
 -- File       : Application.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: Application Core's Top Level
 -------------------------------------------------------------------------------
@@ -116,6 +116,11 @@ architecture mapping of Application is
    signal remoteValid : slv(1 downto 0);
    signal remoteMsg   : MsgArray(1 downto 0);
 
+   signal txClk   : slv(1 downto 0);
+   signal txRst   : slv(1 downto 0);
+   signal txData  : Slv16Array(1 downto 0);
+   signal txDataK : Slv2Array(1 downto 0);
+
 begin
 
    -- Waveform interface (unused)
@@ -166,10 +171,12 @@ begin
          mAxiReadMasters     => axilReadMasters,
          mAxiReadSlaves      => axilReadSlaves);
 
-   --------------------
-   -- BSA/MPS Receivers
-   --------------------
+
    GEN_VEC : for i in 1 downto 0 generate
+   
+      --------------------
+      -- BSA/MPS Receivers
+      --------------------   
       U_BsaMpsMsgRx : entity work.BsaMpsMsgRxCore
          generic map (
             TPD_G            => TPD_G,
@@ -187,12 +194,49 @@ begin
             remoteRd        => remoteRd(i),
             remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
+            -- Emulation TX Data Interface (txClk domain)
+            txClk           => txClk(i),
+            txRst           => txRst(i),
+            txData          => txData(i),
+            txDataK         => txDataK(i),
             -- Remote LLRF BSA/MPS Ports
             gtRefClk        => timingRefClk,
             gtRxP           => gtRxP(i),
             gtRxN           => gtRxN(i),
             gtTxP           => gtTxP(i),
             gtTxN           => gtTxN(i));
+            
+      -------------------------------------------------
+      -- Emulation of TX Data (Used for debugging only)
+      -------------------------------------------------
+      U_EmuTx : entity work.BsaMpsMsgTxFramer
+         generic map (
+            TPD_G => TPD_G)
+         port map (
+            -- BSA/MPS Interface (usrClk domain)
+            usrClk        => axilClk,
+            usrRst        => axilRst,
+            timingStrobe  => timingBus.strobe,
+            timeStamp     => timingBus.message.timeStamp,
+            bsaQuantity0  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity1  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity2  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity3  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity4  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity5  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity6  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity7  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity8  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity9  => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity10 => timingBus.message.timeStamp(31 downto 0),
+            bsaQuantity11 => timingBus.message.timeStamp(31 downto 0),
+            mpsPermit     => timingBus.message.timeStamp(3 downto 0),
+            -- TX Data Interface (txClk domain)
+            txClk         => txClk(i),
+            txRst         => txRst(i),
+            txData        => txData(i),
+            txDataK       => txDataK(i));            
+            
    end generate GEN_VEC;
 
    ------------------------------

@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCore.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
@@ -42,9 +42,9 @@ entity BsaMpsMsgRxCore is
       remoteRd        : in  sl;
       remoteValid     : out sl;
       remoteMsg       : out MsgType;
-      -- Simulation TX Data Interface (txClk domain)
-      txClk           : in  sl               := '0';
-      txRst           : in  sl               := '0';
+      -- EMU TX Data Interface (txClk domain)
+      txClk           : out sl;
+      txRst           : out sl;
       txData          : in  slv(15 downto 0) := (others => '0');
       txDataK         : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
@@ -66,6 +66,8 @@ architecture mapping of BsaMpsMsgRxCore is
    signal rxDispErr   : slv(1 downto 0)  := (others => '0');
    signal rxBufStatus : slv(2 downto 0)  := (others => '0');
    signal rxPolarity  : sl               := '0';
+   signal txPolarity  : sl               := '0';
+   signal loopback    : sl               := '0';
    signal cPllLock    : sl               := '0';
    signal gtRst       : sl               := '0';
 
@@ -86,9 +88,11 @@ begin
          rxDispErr   => rxDispErr,
          rxBufStatus => rxBufStatus,
          rxPolarity  => rxPolarity,
+         txPolarity  => txPolarity,
+         loopback    => loopback,
          cPllLock    => cPllLock,
          gtRst       => gtRst,
-         -- TX Data Interface (txClk domain)
+         -- EMU TX Data Interface (txClk domain)
          txClk       => txClk,
          txRst       => txRst,
          txData      => txData,
@@ -125,6 +129,8 @@ begin
          rxDispErr       => rxDispErr,
          rxBufStatus     => rxBufStatus,
          rxPolarity      => rxPolarity,
+         txPolarity      => txPolarity,
+         loopback        => loopback,
          cPllLock        => cPllLock,
          gtRst           => gtRst,
          -- RX Frame Interface (axilClk domain)     

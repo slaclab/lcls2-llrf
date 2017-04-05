@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCombineTb.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: BsaMpsMsgRxCombine Simulation Testbed
 -------------------------------------------------------------------------------
@@ -175,9 +175,9 @@ begin
             remoteRd        => remoteRd(i),
             remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
-            -- TX Data Interface (txClk domain)
-            txClk           => clk,
-            txRst           => rst,
+            -- EMU TX Data Interface (txClk domain)
+            txClk           => open,
+            txRst           => open,
             txData          => txData,
             txDataK         => txDataK,
             -- Remote LLRF BSA/MPS Ports

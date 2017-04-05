@@ -48,6 +48,8 @@ entity BsaMpsMsgRxFramer is
       rxDispErr       : in  slv(1 downto 0);
       rxBufStatus     : in  slv(2 downto 0);
       rxPolarity      : out sl;
+      txPolarity      : out sl;
+      loopback        : out sl;
       cPllLock        : in  sl;
       gtRst           : out sl;
       -- RX Frame Interface (axilClk domain)     
@@ -346,6 +348,8 @@ begin
          rxDispErr       => rxDispErr,
          rxBufStatus     => rxBufStatus,
          rxPolarity      => rxPolarity,
+         txPolarity      => txPolarity,
+         loopback        => loopback,      
          cPllLock        => cPllLock,
          fifoWr          => r.fifoWr,
          overflow        => overflow,
