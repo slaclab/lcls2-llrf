@@ -12,16 +12,6 @@
 ## Application Ports ##
 #######################
 
-set_property PACKAGE_PIN AN4 [get_ports {gtTxP[0]}] ; #P11 PIN32
-set_property PACKAGE_PIN AN3 [get_ports {gtTxN[0]}] ; #P11 PIN33
-set_property PACKAGE_PIN AP2 [get_ports {gtRxP[0]}] ; #P11 PIN29
-set_property PACKAGE_PIN AP1 [get_ports {gtRxN[0]}] ; #P11 PIN30
-
-set_property PACKAGE_PIN AM6 [get_ports {gtTxP[1]}] ; #P11 PIN38
-set_property PACKAGE_PIN AM5 [get_ports {gtTxN[1]}] ; #P11 PIN39
-set_property PACKAGE_PIN AM2 [get_ports {gtRxP[1]}] ; #P11 PIN35
-set_property PACKAGE_PIN AM1 [get_ports {gtRxN[1]}] ; #P11 PIN36
-
 ####################################
 ## Application Timing Constraints ##
 ####################################
