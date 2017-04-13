@@ -18,33 +18,239 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
   size: 0x1000
   children:
     #########################################################
-    MsgDrop0Cnt:
+    RxLinkUpCnt:
+      at:
+        offset: 0x000
+      class: IntField
+      name: RxLinkUpCnt
+      mode: RO
+      sizeBits: 32
+      description: RxLinkUp Status Counter  
+    #########################################################
+    RxDecErr0Cnt:
+      at:
+        offset: 0x004
+      class: IntField
+      name: RxDecErr0Cnt
+      mode: RO
+      sizeBits: 32
+      description: RxDecErr0 Status Counter   
+    #########################################################
+    RxDecErr1Cnt:
+      at:
+        offset: 0x008
+      class: IntField
+      name: RxDecErr1Cnt
+      mode: RO
+      sizeBits: 32
+      description: RxDecErr1 Status Counter   
+    #########################################################
+    RxDispErr0Cnt:
+      at:
+        offset: 0x00C
+      class: IntField
+      name: RxDispErr0Cnt
+      mode: RO
+      sizeBits: 32
+      description: RxDispErr0 Status Counter     
+    #########################################################
+    RxDispErr1Cnt:
+      at:
+        offset: 0x010
+      class: IntField
+      name: RxDispErr1Cnt
+      mode: RO
+      sizeBits: 32
+      description: RxDispErr1 Status Counter           
+    #########################################################
+    OverflowCnt:
+      at:
+        offset: 0x014
+      class: IntField
+      name: OverflowCnt
+      mode: RO
+      sizeBits: 32
+      description: Overflow Status Counter 
+    #########################################################
+    ErrPktLenCnt:
+      at:
+        offset: 0x018
+      class: IntField
+      name: ErrPktLenCnt
+      mode: RO
+      sizeBits: 32
+      description: ErrPktLen Status Counter  
+    #########################################################
+    ErrCrcCnt:
+      at:
+        offset: 0x01C
+      class: IntField
+      name: ErrCrcCnt
+      mode: RO
+      sizeBits: 32
+      description: ErrCrc Status Counter     
+    #########################################################
+    CPllLockCnt:
+      at:
+        offset: 0x020
+      class: IntField
+      name: CPllLockCnt
+      mode: RO
+      sizeBits: 32
+      description: CPllLock Status Counter   
+    #########################################################
+    GtRxFifoErrCnt:
+      at:
+        offset: 0x024
+      class: IntField
+      name: GtRxFifoErrCnt
+      mode: RO
+      sizeBits: 32
+      description: GtRxFifoErr Status Counter         
+    #########################################################
+    RxLinkUp:
+      at:
+        offset: 0x400
+      class: IntField
+      name: RxLinkUp
+      mode: RO
+      lsBit: 0
+      sizeBits: 1
+      description: RxLinkUp Status Bit
+    #########################################################
+    RxDecErr:
+      at:
+        offset: 0x400
+      class: IntField
+      name: RxDecErr
+      mode: RO
+      lsBit: 1
+      sizeBits: 2
+      description: RxDecErr Status Bits 
+    #########################################################
+    RxDispErr:
+      at:
+        offset: 0x400
+      class: IntField
+      name: RxDispErr
+      mode: RO
+      lsBit: 3
+      sizeBits: 2
+      description: RxDispErr Status Bits
+    #########################################################
+    Overflow:
+      at:
+        offset: 0x400
+      class: IntField
+      name: Overflow
+      mode: RO
+      lsBit: 5
+      sizeBits: 1
+      description: Overflow Status Bit 
+    #########################################################
+    ErrPktLen:
+      at:
+        offset: 0x400
+      class: IntField
+      name: ErrPktLen
+      mode: RO
+      lsBit: 6
+      sizeBits: 1
+      description: ErrPktLen Status Bit
+    #########################################################
+    ErrCrc:
+      at:
+        offset: 0x400
+      class: IntField
+      name: ErrCrc
+      mode: RO
+      lsBit: 7
+      sizeBits: 1
+      description: ErrCrc Status Bit     
+    #########################################################
+    CPllLock:
+      at:
+        offset: 0x404
+      class: IntField
+      name: CPllLock
+      mode: RO
+      lsBit: 0
+      sizeBits: 1
+      description: CPllLock Status Bit   
+    #########################################################
+    GtRxFifoErr:
+      at:
+        offset: 0x404
+      class: IntField
+      name: GtRxFifoErr
+      mode: RO
+      lsBit: 1
+      sizeBits: 1
+      description: GtRxFifoErr Status Bit  
+    #########################################################
+    RxPolarity:
       at:
         offset: 0x700
       class: IntField
-      name: MsgDrop0Cnt
-      mode: RO
-      sizeBits: 32
-      description: MsgDrop0 Status Counter  
+      name: RxPolarity
+      mode: RW
+      sizeBits: 1
+      description: GTH's RxPolarity
     #########################################################
-    MsgDrop1Cnt:
+    TxPolarity:
       at:
         offset: 0x704
       class: IntField
-      name: MsgDrop1Cnt
-      mode: RO
-      sizeBits: 32
-      description: MsgDrop1 Status Counter        
+      name: TxPolarity
+      mode: RW
+      sizeBits: 1
+      description: GTH's TxPolarity  
+    #########################################################
+    Loopback:
+      at:
+        offset: 0x708
+      class: IntField
+      name: Loopback
+      mode: RW
+      sizeBits: 1
+      description: GTH's Loopback   
+    #########################################################
+    RollOverEn:
+      at:
+        offset: 0x7F0
+      class: IntField
+      name: RollOverEn
+      mode: RW
+      sizeBits: 10
+      description: Status counters' roll over enable bit mask        
     #########################################################
     CntRst:
       at:
-        offset: 0xFFC
+        offset: 0x7F4
       class: IntField
       name: CntRst
       mode: WO
       sizeBits: 1
       description: Status Counter Reset   
-    #########################################################    
+    #########################################################
+    GtRst:
+      at:
+        offset: 0x7F8
+      class: IntField
+      name: GtRst
+      mode: WO
+      sizeBits: 1
+      description: GTH Reset     
+    #########################################################
+    HardRst:
+      at:
+        offset: 0x7FC
+      class: IntField
+      name: HardRst
+      mode: WO
+      sizeBits: 1
+      description: Hard Reset           
+    #########################################################
     RstCnt:
       name: RstCnt
       class: SequenceCommand
@@ -55,3 +261,24 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       - entry: CntRst
         value: 0x1      
     #########################################################
+    RstGt:
+      name: RstGt
+      class: SequenceCommand
+      at:
+        offset: 0x0
+      description: Reset the GTH
+      sequence:
+      - entry: GtRst
+        value: 0x1
+    #########################################################
+    RstHard:
+      name: RstHard
+      class: SequenceCommand
+      at:
+        offset: 0x0
+      description: Reset the registers to default values
+      sequence:
+      - entry: HardRst
+        value: 0x1
+    #########################################################    
+    

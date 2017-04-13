@@ -15,7 +15,7 @@
 AppCore: &Application 
   name: Application
   description: AMC Carrier Application Core
-  size: 0x00100000
+  size: 0x80000000
   class: MMIODev
   configPrio: 1
   ########

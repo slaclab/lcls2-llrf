@@ -171,8 +171,8 @@ begin
          DURATION_G => ite(SIMULATION_G, 250, 25000000))  -- 100 ms
       port map (
          arst   => r.gtRst,
-         clk    => rxClk,
-         rstOut => gtRst);
+         clk    => axilClk,
+         rstOut => gtRst);-- ASYNC reset
 
    U_packetRate : entity work.SyncTrigRate
       generic map (

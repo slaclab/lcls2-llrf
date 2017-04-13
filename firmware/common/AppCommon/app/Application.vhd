@@ -49,9 +49,10 @@ entity Application is
       timingRst            : out sl;
       timingBus            : in  TimingBusType;
       timingPhy            : out TimingPhyType;
-      timingRefClk         : in  sl;
       timingPhyClk         : in  sl;
       timingPhyRst         : in  sl;
+      timingRefClk         : in  sl;
+      timingRefClkDiv2     : in  sl;
       -- Diagnostic Interface (diagnosticClk domain)
       diagnosticClk        : out sl;
       diagnosticRst        : out sl;
@@ -116,10 +117,11 @@ architecture mapping of Application is
    signal remoteValid : slv(1 downto 0);
    signal remoteMsg   : MsgArray(1 downto 0);
 
-   signal txClk   : slv(1 downto 0);
-   signal txRst   : slv(1 downto 0);
    signal txData  : Slv16Array(1 downto 0);
    signal txDataK : Slv2Array(1 downto 0);
+   
+   signal clk : sl;
+   signal rst : sl;
 
 begin
 
@@ -149,6 +151,26 @@ begin
    diagnosticClk <= axilClk;
    diagnosticRst <= axilRst;
 
+   U_ClockManager : entity work.ClockManagerUltraScale
+      generic map(
+         TPD_G              => TPD_G,
+         TYPE_G             => "MMCM",
+         INPUT_BUFG_G       => false,
+         FB_BUFG_G          => true,
+         RST_IN_POLARITY_G  => '0',
+         NUM_CLOCKS_G       => 1,
+         -- MMCM attributes
+         BANDWIDTH_G        => "OPTIMIZED",
+         CLKIN_PERIOD_G     => 5.355,
+         DIVCLK_DIVIDE_G    => 1,
+         CLKFBOUT_MULT_F_G  => 6.000,
+         CLKOUT0_DIVIDE_F_G => 6.000)
+      port map(
+         clkIn     => timingRefClkDiv2,
+         rstIn     => axilRst,
+         clkOut(0) => clk,
+         rstOut(0) => rst);   
+         
    ---------------------
    -- AXI-Lite Crossbar
    ---------------------
@@ -195,11 +217,13 @@ begin
             remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
             -- Emulation TX Data Interface (txClk domain)
-            txClk           => txClk(i),
-            txRst           => txRst(i),
+            txClk           => clk,
+            txRst           => rst,
             txData          => txData(i),
             txDataK         => txDataK(i),
             -- Remote LLRF BSA/MPS Ports
+            rxClk           => clk,
+            rxRst           => rst,
             gtRefClk        => timingRefClk,
             gtRxP           => gtRxP(i),
             gtRxN           => gtRxN(i),
@@ -232,8 +256,8 @@ begin
             bsaQuantity11 => timingBus.message.timeStamp(31 downto 0),
             mpsPermit     => timingBus.message.timeStamp(3 downto 0),
             -- TX Data Interface (txClk domain)
-            txClk         => txClk(i),
-            txRst         => txRst(i),
+            txClk         => clk,
+            txRst         => rst,
             txData        => txData(i),
             txDataK       => txDataK(i));            
             

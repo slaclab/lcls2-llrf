@@ -176,11 +176,13 @@ begin
             remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
             -- EMU TX Data Interface (txClk domain)
-            txClk           => open,
-            txRst           => open,
+            txClk           => clk,
+            txRst           => rst,
             txData          => txData,
             txDataK         => txDataK,
             -- Remote LLRF BSA/MPS Ports
+            rxClk           => clk,
+            rxRst           => rst,            
             gtRefClk        => clk,
             gtRxP           => linkP(i),
             gtRxN           => linkN(i),

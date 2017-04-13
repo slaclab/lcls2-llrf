@@ -43,11 +43,13 @@ entity BsaMpsMsgRxCore is
       remoteValid     : out sl;
       remoteMsg       : out MsgType;
       -- EMU TX Data Interface (txClk domain)
-      txClk           : out sl;
-      txRst           : out sl;
+      txClk           : in sl;
+      txRst           : in sl;
       txData          : in  slv(15 downto 0) := (others => '0');
       txDataK         : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
+      rxClk           : in sl;
+      rxRst           : in sl;      
       gtRefClk        : in  sl;
       gtRxP           : in  sl;
       gtRxN           : in  sl;
@@ -57,8 +59,6 @@ end BsaMpsMsgRxCore;
 
 architecture mapping of BsaMpsMsgRxCore is
 
-   signal rxClk       : sl               := '0';
-   signal rxRst       : sl               := '0';
    signal rxValid     : sl               := '0';
    signal rxData      : slv(15 downto 0) := (others => '0');
    signal rxdataK     : slv(1 downto 0)  := (others => '0');

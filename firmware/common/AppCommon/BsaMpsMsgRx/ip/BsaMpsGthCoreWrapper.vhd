@@ -2,7 +2,7 @@
 -- File       : BsaMpsGthCoreWrapper.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-05
+-- Last update: 2017-04-13
 -------------------------------------------------------------------------------
 -- Description: Wrapper for BsaMpsGthCore
 -------------------------------------------------------------------------------
@@ -31,8 +31,8 @@ entity BsaMpsGthCoreWrapper is
       SIMULATION_G : boolean := false);
    port (
       -- RX Data Interface (clk domain)
-      rxClk       : out sl;
-      rxRst       : out sl;
+      rxClk       : in  sl;
+      rxRst       : in  sl;
       rxValid     : out sl;
       rxData      : out slv(15 downto 0);
       rxdataK     : out slv(1 downto 0);
@@ -45,8 +45,8 @@ entity BsaMpsGthCoreWrapper is
       cPllLock    : out sl;
       gtRst       : in  sl;
       -- EMU TX Data Interface (txClk domain)
-      txClk       : out sl;
-      txRst       : out sl;
+      txClk       : in  sl;
+      txRst       : in  sl;
       txData      : in  slv(15 downto 0) := (others => '0');
       txDataK     : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
@@ -97,6 +97,7 @@ architecture mapping of BsaMpsGthCoreWrapper is
          txctrl2_in                         : in  std_logic_vector(7 downto 0);
          txusrclk_in                        : in  std_logic_vector(0 downto 0);
          txusrclk2_in                       : in  std_logic_vector(0 downto 0);
+         cplllock_out                       : out std_logic_vector(0 downto 0);
          gthtxn_out                         : out std_logic_vector(0 downto 0);
          gthtxp_out                         : out std_logic_vector(0 downto 0);
          rxbufstatus_out                    : out std_logic_vector(2 downto 0);
@@ -127,6 +128,8 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal rxpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
    signal txpmaresetdone_out            : slv(0 downto 0)  := (others => '0');
    signal loopback_in                   : slv(2 downto 0)  := (others => '0');
+   signal txoutclk_out                  : sl               := '0';
+   signal cplllock_out                  : sl               := '0';
 
    signal data          : slv(15 downto 0) := (others => '0');
    signal dataK         : slv(1 downto 0)  := (others => '0');
@@ -135,7 +138,6 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal rxBuff        : slv(2 downto 0)  := (others => '0');
    signal cnt           : slv(31 downto 0) := (others => '0');
    signal clk           : sl               := '0';
-   signal txOutClkOut   : sl               := '0';
    signal rxReset       : sl               := '0';
    signal linkUp        : sl               := '0';
    signal dataValid     : sl               := '0';
@@ -148,13 +150,7 @@ architecture mapping of BsaMpsGthCoreWrapper is
 
 begin
 
-   loopback_in <= '0' & loopback & '0';
-   txClk <= clk;
-   rxClk <= clk;
-   rxRst <= rxReset;   
-   
    GEN_SIM : if (SIMULATION_G = true) generate
-      clk         <= '0';
       rxReset     <= '0';
       rxValid     <= '1';
       rxData      <= txData;
@@ -169,27 +165,7 @@ begin
 
    GEN_REAL : if (SIMULATION_G = false) generate
 
-      U_BUFG_GT : BUFG_GT
-         port map (
-            I       => txOutClkOut,
-            CE      => '1',
-            CEMASK  => '1',
-            CLR     => '0',
-            CLRMASK => '1',
-            DIV     => "000",           -- Divide by 1
-            O       => clk);
-
-      U_PwrUpRstTx : entity work.PwrUpRst
-         generic map(
-            TPD_G          => TPD_G,
-            IN_POLARITY_G  => '0',
-            OUT_POLARITY_G => '1',
-            DURATION_G     => DURATION_100MS_C)
-         port map (
-            arst   => txRstDone,
-            clk    => clk,
-            rstOut => txRst);
-
+      loopback_in <= '0' & loopback & '0';
       rxValid     <= linkUp;
       rxData      <= data    when(linkUp = '1') else (others => '0');
       rxDataK     <= dataK   when(linkUp = '1') else (others => '0');
@@ -198,11 +174,11 @@ begin
       rxBufStatus <= rxBuff  when(linkUp = '1') else (others => '0');
       dataValid   <= not (uOr(decErr) or uOr(dispErr));
 
-      process(clk)
+      process(rxClk)
       begin
-         if rising_edge(clk) then
-            rxReset <= gtRst or wdtRst after TPD_G;
-            if (gtRst = '1') or (rxRstDone = '0') or (dataValid = '0') or (rxBuff(2) = '1') then
+         if rising_edge(rxClk) then
+            rxReset <= gtRst or wdtRst or rxRst after TPD_G;
+            if (gtRst = '1') or(rxRst = '1')or (rxRstDone = '0') or (dataValid = '0') or (rxBuff(2) = '1') then
                cnt    <= (others => '0') after TPD_G;
                linkUp <= '0'             after TPD_G;
             else
@@ -224,7 +200,7 @@ begin
             DURATION_G     => DURATION_100MS_C)
          port map (
             arst   => wdtReset,
-            clk    => clk,
+            clk    => rxClk,
             rstOut => wdtRst);
 
       U_WatchDogRst : entity work.WatchDogRst
@@ -232,9 +208,18 @@ begin
             TPD_G      => TPD_G,
             DURATION_G => DURATION_1S_C)
          port map (
-            clk    => clk,
+            clk    => rxClk,
             monIn  => linkUp,
             rstOut => wdtRstOneShot);
+
+      U_SyncOutVec : entity work.SynchronizerVector
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 1)
+         port map (
+            clk        => rxClk,
+            dataIn(0)  => cplllock_out,
+            dataOut(0) => cPllLock);
 
       U_BsaMpsGthCore : BsaMpsGthCore
          port map (
@@ -242,9 +227,9 @@ begin
             gtwiz_userclk_rx_active_in(0)         => '1',
             gtwiz_reset_clk_freerun_in (0)        => stableClk,
             gtwiz_reset_all_in(0)                 => gtRst,
-            gtwiz_reset_tx_pll_and_datapath_in(0) => '0',
+            gtwiz_reset_tx_pll_and_datapath_in(0) => gtRst,
             gtwiz_reset_tx_datapath_in(0)         => gtRst,
-            gtwiz_reset_rx_pll_and_datapath_in(0) => '0',
+            gtwiz_reset_rx_pll_and_datapath_in(0) => gtRst,
             gtwiz_reset_rx_datapath_in(0)         => rxReset,
             gtwiz_reset_rx_cdr_stable_out         => gtwiz_reset_rx_cdr_stable_out,
             gtwiz_reset_tx_done_out(0)            => txRstDone,
@@ -262,15 +247,16 @@ begin
             rxmcommaalignen_in(0)                 => '1',
             rxpcommaalignen_in(0)                 => '1',
             rxpolarity_in(0)                      => rxPolarity,
-            rxusrclk_in(0)                        => clk,
-            rxusrclk2_in(0)                       => clk,
+            rxusrclk_in(0)                        => rxClk,
+            rxusrclk2_in(0)                       => rxClk,
             tx8b10ben_in(0)                       => '1',
             txctrl0_in                            => X"0000",
             txctrl1_in                            => X"0000",
             txctrl2_in(1 downto 0)                => txDataK,
             txctrl2_in(7 downto 2)                => (others => '0'),
-            txusrclk_in(0)                        => clk,
-            txusrclk2_in(0)                       => clk,
+            txusrclk_in(0)                        => txClk,
+            txusrclk2_in(0)                       => txClk,
+            cplllock_out(0)                       => cplllock_out,
             gthtxn_out(0)                         => gtTxN,
             gthtxp_out(0)                         => gtTxP,
             rxbufstatus_out                       => rxBuff,
@@ -287,7 +273,7 @@ begin
             rxctrl3_out(7 downto 2)               => rxctrl3_out,
             rxoutclk_out                          => rxoutclk_out,
             rxpmaresetdone_out                    => rxpmaresetdone_out,
-            txoutclk_out(0)                       => txOutClkOut,
+            txoutclk_out(0)                       => txoutclk_out,
             txpmaresetdone_out                    => txpmaresetdone_out);
    end generate;
 

@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
--- File       : AmcCarrierLlrf.vhd
+-- File       : AmcCarrierLlrfRtmEth.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-02-04
 -- Last update: 2017-04-12
@@ -29,7 +29,7 @@ use work.TimingPkg.all;
 use work.AmcCarrierPkg.all;
 use work.AppTopPkg.all;
 
-entity AmcCarrierLlrf is
+entity AmcCarrierLlrfRtmEth is
    generic (
       TPD_G        : time := 1 ns;
       BUILD_INFO_G : BuildInfoType);
@@ -113,9 +113,9 @@ entity AmcCarrierLlrf is
       -- SYSMON Ports
       vPIn             : in    sl;
       vNIn             : in    sl);
-end AmcCarrierLlrf;
+end AmcCarrierLlrfRtmEth;
 
-architecture top_level of AmcCarrierLlrf is
+architecture top_level of AmcCarrierLlrfRtmEth is
 
    -- AXI-Lite Interface (axilClk domain)
    signal axilClk              : sl;
@@ -244,12 +244,12 @@ begin
          BUILD_INFO_G          => BUILD_INFO_G,
          SIM_SPEEDUP_G         => false,  -- false = Normal Operation, true = simulation
          DISABLE_BSA_G         => false,  -- false = includes BSA engine, true = doesn't build the BSA engine
-         RTM_ETH_G             => false,  -- false = 10GbE over backplane, true = 1GbE over RTM
+         RTM_ETH_G             => true,  -- false = 10GbE over backplane, true = 1GbE over RTM
          TIME_GEN_APP_G        => false,  -- false = normal application, true = timing generator application
          TIME_GEN_EXTREF_G     => false,  -- false = normal application, true = timing generator using external reference
          FSBL_G                => false,  -- false = Normal Operation, true = First Stage Boot loader
          APP_TYPE_G            => APP_LLRF_TYPE_C,
-         ETH_USR_FRAME_LIMIT_G => 4096,   -- 4kB  
+         ETH_USR_FRAME_LIMIT_G => 4096,  -- 4kB  
          MPS_SLOT_G            => false)  -- false = Normal Operation, true = MPS message concentrator (Slot#2 only)            
       port map (
          ----------------------
