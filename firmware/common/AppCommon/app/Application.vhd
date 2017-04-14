@@ -2,7 +2,7 @@
 -- File       : Application.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-05
+-- Last update: 2017-04-14
 -------------------------------------------------------------------------------
 -- Description: Application Core's Top Level
 -------------------------------------------------------------------------------
@@ -117,9 +117,9 @@ architecture mapping of Application is
    signal remoteValid : slv(1 downto 0);
    signal remoteMsg   : MsgArray(1 downto 0);
 
-   signal txData  : Slv16Array(1 downto 0);
-   signal txDataK : Slv2Array(1 downto 0);
-   
+   signal txData  : slv(15 downto 0);
+   signal txDataK : slv(1 downto 0);
+
    signal clk : sl;
    signal rst : sl;
 
@@ -155,9 +155,9 @@ begin
       generic map(
          TPD_G              => TPD_G,
          TYPE_G             => "MMCM",
-         INPUT_BUFG_G       => false,
+         INPUT_BUFG_G       => true,
          FB_BUFG_G          => true,
-         RST_IN_POLARITY_G  => '0',
+         RST_IN_POLARITY_G  => '1',
          NUM_CLOCKS_G       => 1,
          -- MMCM attributes
          BANDWIDTH_G        => "OPTIMIZED",
@@ -169,8 +169,8 @@ begin
          clkIn     => timingRefClkDiv2,
          rstIn     => axilRst,
          clkOut(0) => clk,
-         rstOut(0) => rst);   
-         
+         rstOut(0) => rst);
+
    ---------------------
    -- AXI-Lite Crossbar
    ---------------------
@@ -195,7 +195,7 @@ begin
 
 
    GEN_VEC : for i in 1 downto 0 generate
-   
+
       --------------------
       -- BSA/MPS Receivers
       --------------------   
@@ -219,8 +219,8 @@ begin
             -- Emulation TX Data Interface (txClk domain)
             txClk           => clk,
             txRst           => rst,
-            txData          => txData(i),
-            txDataK         => txDataK(i),
+            txData          => txData,
+            txDataK         => txDataK,
             -- Remote LLRF BSA/MPS Ports
             rxClk           => clk,
             rxRst           => rst,
@@ -229,39 +229,39 @@ begin
             gtRxN           => gtRxN(i),
             gtTxP           => gtTxP(i),
             gtTxN           => gtTxN(i));
-            
-      -------------------------------------------------
-      -- Emulation of TX Data (Used for debugging only)
-      -------------------------------------------------
-      U_EmuTx : entity work.BsaMpsMsgTxFramer
-         generic map (
-            TPD_G => TPD_G)
-         port map (
-            -- BSA/MPS Interface (usrClk domain)
-            usrClk        => axilClk,
-            usrRst        => axilRst,
-            timingStrobe  => timingBus.strobe,
-            timeStamp     => timingBus.message.timeStamp,
-            bsaQuantity0  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity1  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity2  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity3  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity4  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity5  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity6  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity7  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity8  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity9  => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity10 => timingBus.message.timeStamp(31 downto 0),
-            bsaQuantity11 => timingBus.message.timeStamp(31 downto 0),
-            mpsPermit     => timingBus.message.timeStamp(3 downto 0),
-            -- TX Data Interface (txClk domain)
-            txClk         => clk,
-            txRst         => rst,
-            txData        => txData(i),
-            txDataK       => txDataK(i));            
-            
+
    end generate GEN_VEC;
+
+   -------------------------------------------------
+   -- Emulation of TX Data (Used for debugging only)
+   -------------------------------------------------
+   U_EmuTx : entity work.BsaMpsMsgTxFramer
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         -- BSA/MPS Interface (usrClk domain)
+         usrClk        => axilClk,
+         usrRst        => axilRst,
+         timingStrobe  => timingBus.strobe,
+         timeStamp     => timingBus.message.timeStamp,
+         bsaQuantity0  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity1  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity2  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity3  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity4  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity5  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity6  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity7  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity8  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity9  => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity10 => timingBus.message.timeStamp(31 downto 0),
+         bsaQuantity11 => timingBus.message.timeStamp(31 downto 0),
+         mpsPermit     => timingBus.message.timeStamp(3 downto 0),
+         -- TX Data Interface (txClk domain)
+         txClk         => clk,
+         txRst         => rst,
+         txData        => txData,
+         txDataK       => txDataK);
 
    ------------------------------
    -- Message Concentrator Module

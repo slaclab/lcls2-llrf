@@ -168,6 +168,7 @@ begin
    U_gtRst : entity work.PwrUpRst
       generic map (
          TPD_G      => TPD_G,
+         -- DURATION_G => 250)  -- 100 ms
          DURATION_G => ite(SIMULATION_G, 250, 25000000))  -- 100 ms
       port map (
          arst   => r.gtRst,

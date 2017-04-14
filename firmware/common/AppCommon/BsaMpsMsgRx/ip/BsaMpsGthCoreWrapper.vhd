@@ -60,6 +60,7 @@ end BsaMpsGthCoreWrapper;
 
 architecture mapping of BsaMpsGthCoreWrapper is
 
+   -- constant DURATION_100MS_C : positive := 255;
    constant DURATION_100MS_C : positive := ite(SIMULATION_G, 255, 18550000);
    constant DURATION_1S_C    : positive := (10*DURATION_100MS_C);
 

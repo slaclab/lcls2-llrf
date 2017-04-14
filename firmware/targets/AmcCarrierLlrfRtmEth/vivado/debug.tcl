@@ -37,29 +37,41 @@ set_property C_DATA_DEPTH 1024 [get_debug_cores ${ilaName}]
 #################################
 ## Set the clock for the ILA core
 #################################
+# SetDebugCoreClk ${ilaName} {U_App/axilClk}
 SetDebugCoreClk ${ilaName} {U_App/clk}
 
 #######################
 ## Set the debug Probes
 #######################
 
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_all_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_rx_cdr_stable_out[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_rx_datapath_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_rx_done_out[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_rx_pll_and_datapath_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_tx_datapath_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_tx_done_out[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/gtwiz_reset_tx_pll_and_datapath_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/loopback_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/rxbufreset_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/rxbufstatus_out[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/rxpmaresetdone_out[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/rxpolarity_in[*]}
-ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/GEN_REAL.U_BsaMpsGthCore/txpmaresetdone_out[*]}
+ConfigProbe ${ilaName} {U_App/U_ClockManager/locked}
+
+ConfigProbe ${ilaName} {U_App/txData[*]}
+ConfigProbe ${ilaName} {U_App/txDataK[*]}
+
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxBufStatus[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxData[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxdataK[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxDecErr[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxDispErr[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/cPllLock}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/rxValid}
 ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/wdtReset}
 ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/wdtRst}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/wdtRst}
 ConfigProbe ${ilaName} {U_App/GEN_VEC[0].U_BsaMpsMsgRx/U_Gth/wdtRstOneShot}
+
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxBufStatus[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxData[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxdataK[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxDecErr[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxDispErr[*]}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/cPllLock}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/rxValid}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/wdtReset}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/wdtRst}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/wdtRst}
+ConfigProbe ${ilaName} {U_App/GEN_VEC[1].U_BsaMpsMsgRx/U_Gth/wdtRstOneShot}
 
 ##########################
 ## Write the port map file
