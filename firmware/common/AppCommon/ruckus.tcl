@@ -13,7 +13,9 @@ if { ${family} == "kintex7" } {
 }
 
 if { ${family} == "kintexu" } {   
-   loadSource -dir "$::DIR_PATH/app"   
+   loadSource      -dir "$::DIR_PATH/app"   
+   loadConstraints -dir "$::DIR_PATH/app/"
+   
    loadSource -path "$::DIR_PATH/BsaMpsMsgRx/ip/BsaMpsGthCoreWrapper.vhd"
    loadSource -path "$::DIR_PATH/BsaMpsMsgRx/ip/BsaMpsMsgRxCore.vhd"
    loadSource -path "$::DIR_PATH/BsaMpsMsgRx/ip/BsaMpsGthCore.dcp"
