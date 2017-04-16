@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCombine.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-05
+-- Last update: 2017-04-15
 -------------------------------------------------------------------------------
 -- Description: Combines the timingBus with the two remote links to form the 
 --              diagnosticBus message.
@@ -64,7 +64,6 @@ architecture rtl of BsaMpsMsgRxCombine is
       aligned        : slv(1 downto 0);
       sevr           : Slv2Array(1 downto 0);
       remoteRd       : slv(1 downto 0);
-      tsDly          : slv(63 downto 0);
       diagnosticBus  : DiagnosticBusType;
       axilReadSlave  : AxiLiteReadSlaveType;
       axilWriteSlave : AxiLiteWriteSlaveType;
@@ -78,7 +77,6 @@ architecture rtl of BsaMpsMsgRxCombine is
       aligned        => (others => '0'),
       sevr           => (others => "11"),
       remoteRd       => (others => '0'),
-      tsDly          => (others => '0'),
       diagnosticBus  => DIAGNOSTIC_BUS_INIT_C,
       axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C,
       axilWriteSlave => AXI_LITE_WRITE_SLAVE_INIT_C,
@@ -96,8 +94,14 @@ architecture rtl of BsaMpsMsgRxCombine is
    signal fifoDout      : slv(TIMING_MESSAGE_BITS_C-1 downto 0);
    signal timingMessage : TimingMessageType;
 
-   -- attribute dont_touch      : string;
-   -- attribute dont_touch of r : signal is "TRUE";
+   attribute dont_touch                  : string;
+   attribute dont_touch of r             : signal is "TRUE";
+   attribute dont_touch of fifoRst       : signal is "TRUE";
+   attribute dont_touch of fifoWr        : signal is "TRUE";
+   attribute dont_touch of fifoRd        : signal is "TRUE";
+   attribute dont_touch of fifoValid     : signal is "TRUE";
+   attribute dont_touch of progFull      : signal is "TRUE";
+   attribute dont_touch of timingMessage : signal is "TRUE";
 
 begin
 
@@ -167,7 +171,7 @@ begin
             -- Loop through the remote channels
             for i in 1 downto 0 loop
                -- Check if behind in time with respect to local FIFO
-               if (remoteMsg(i).timeStamp < r.tsDly) and (remoteValid(i) = '1') then
+               if (remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1') then
                   -- Blow off data
                   v.remoteRd(i) := '1';
                end if;
@@ -178,7 +182,7 @@ begin
                   v.sevr(i)    := "00";
                end if;
                -- Check if ahead in time with respect to local FIFO
-               if (remoteMsg(i).timeStamp > r.tsDly) and (remoteValid(i) = '1') then
+               if (remoteMsg(i).timeStamp > timingMessage.timeStamp) and (remoteValid(i) = '1') then
                   -- Set the flag
                   remoteAhead(i) := '1';
                end if;
@@ -209,8 +213,6 @@ begin
             v.remoteRd             := r.aligned;
             v.fifoRd               := '1';
             v.diagnosticBus.strobe := '1';
-            -- Make a local copy of the time stamp
-            v.tsDly                := timingMessage.timeStamp;
             -- Update the data field
             for i in 11 downto 0 loop
                -- Link 0

@@ -170,7 +170,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
     #########################################################
     CPllLock:
       at:
-        offset: 0x404
+        offset: 0x401
       class: IntField
       name: CPllLock
       mode: RO
@@ -180,7 +180,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
     #########################################################
     GtRxFifoErr:
       at:
-        offset: 0x404
+        offset: 0x401
       class: IntField
       name: GtRxFifoErr
       mode: RO

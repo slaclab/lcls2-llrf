@@ -2,7 +2,7 @@
 -- File       : BsaMpsGthCoreWrapper.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-13
+-- Last update: 2017-04-14
 -------------------------------------------------------------------------------
 -- Description: Wrapper for BsaMpsGthCore
 -------------------------------------------------------------------------------
@@ -138,7 +138,6 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal dispErr       : slv(1 downto 0)  := (others => '0');
    signal rxBuff        : slv(2 downto 0)  := (others => '0');
    signal cnt           : slv(31 downto 0) := (others => '0');
-   signal clk           : sl               := '0';
    signal rxReset       : sl               := '0';
    signal linkUp        : sl               := '0';
    signal dataValid     : sl               := '0';
@@ -148,6 +147,21 @@ architecture mapping of BsaMpsGthCoreWrapper is
    signal rxRstDone     : sl               := '0';
    signal txRstDone     : sl               := '0';
 
+   attribute dont_touch                  : string;
+   attribute dont_touch of data          : signal is "TRUE";
+   attribute dont_touch of dataK         : signal is "TRUE";
+   attribute dont_touch of decErr        : signal is "TRUE";
+   attribute dont_touch of dispErr       : signal is "TRUE";
+   attribute dont_touch of rxBuff        : signal is "TRUE";
+   attribute dont_touch of cnt           : signal is "TRUE";
+   attribute dont_touch of rxReset       : signal is "TRUE";
+   attribute dont_touch of linkUp        : signal is "TRUE";
+   attribute dont_touch of dataValid     : signal is "TRUE";
+   attribute dont_touch of wdtRst        : signal is "TRUE";
+   attribute dont_touch of wdtReset      : signal is "TRUE";
+   attribute dont_touch of wdtRstOneShot : signal is "TRUE";
+   attribute dont_touch of rxRstDone     : signal is "TRUE";
+   attribute dont_touch of txRstDone     : signal is "TRUE";
 
 begin
 
