@@ -18,23 +18,32 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
   size: 0x1000
   children:
     #########################################################
-    MsgDrop0Cnt:
+    RemoteDrop0Cnt:
       at:
         offset: 0x700
       class: IntField
-      name: MsgDrop0Cnt
+      name: RemoteDrop0Cnt
       mode: RO
       sizeBits: 32
-      description: MsgDrop0 Status Counter  
+      description: RemoteDrop0 Status Counter  
     #########################################################
-    MsgDrop1Cnt:
+    RemoteDrop1Cnt:
       at:
         offset: 0x704
       class: IntField
-      name: MsgDrop1Cnt
+      name: RemoteDrop1Cnt
       mode: RO
       sizeBits: 32
-      description: MsgDrop1 Status Counter        
+      description: RemoteDrop1 Status Counter 
+    #########################################################
+    PacketRate:
+      at:
+        offset: 0x708
+      class: IntField
+      name: PacketRate
+      mode: RO
+      sizeBits: 32
+      description: Diagnostic Bus Update Rate (units of Hz)      
     #########################################################
     CntRst:
       at:

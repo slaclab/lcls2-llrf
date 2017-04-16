@@ -92,6 +92,7 @@ architecture rtl of BsaMpsMsgRxCombine is
    signal progFull      : sl;
    signal fifoDin       : slv(TIMING_MESSAGE_BITS_C-1 downto 0);
    signal fifoDout      : slv(TIMING_MESSAGE_BITS_C-1 downto 0);
+   signal packetRate    : slv(31 downto 0);
    signal timingMessage : TimingMessageType;
 
    attribute dont_touch                  : string;
@@ -128,7 +129,8 @@ begin
    timingMessage <= toTimingMessageType(fifoDout);
 
    comb : process (axilReadMaster, axilRst, axilWriteMaster, fifoValid,
-                   progFull, r, remoteMsg, remoteValid, timingMessage) is
+                   packetRate, progFull, r, remoteMsg, remoteValid,
+                   timingMessage) is
       variable v           : RegType;
       variable axilEp      : AxiLiteEndPointType;
       variable busy        : sl;
@@ -159,7 +161,7 @@ begin
                -- Check the local FIFO threshold 
                if (progFull = '1') then
                   -- Next state
-                  v.state := SEND_MSG_S;
+                  v.state := CHECK_ALIGN_S;
                -- Check if either of the remote FIFOs have data
                elsif (uOr(remoteValid) = '1') then
                   -- Next state
@@ -201,6 +203,9 @@ begin
                v.state := SEND_MSG_S;
             -- Check if link1 aligned but link0 ahead
             elsif (v.aligned = "10") and (remoteAhead = "01") then
+               -- Next state
+               v.state := SEND_MSG_S;
+            elsif (progFull = '1') then
                -- Next state
                v.state := SEND_MSG_S;
             else
@@ -248,6 +253,7 @@ begin
 
       axiSlaveRegisterR(axilEp, x"700", 0, r.dropCnt(0));
       axiSlaveRegisterR(axilEp, x"704", 0, r.dropCnt(1));
+      axiSlaveRegisterR(axilEp, x"708", 0, packetRate);
 
       axiSlaveRegister(axilEp, x"FFC", 0, v.cntRst);
 
@@ -283,5 +289,21 @@ begin
          r <= rin after TPD_G;
       end if;
    end process seq;
+
+   U_packetRate : entity work.SyncTrigRate
+      generic map (
+         TPD_G          => TPD_G,
+         COMMON_CLK_G   => false,
+         REF_CLK_FREQ_G => 156.25E+6,   -- units of Hz
+         REFRESH_RATE_G => 1.0,         -- units of Hz
+         CNT_WIDTH_G    => 32)          -- Counters' width
+      port map (
+         -- Trigger Input (locClk domain)
+         trigIn      => r.fifoRd,
+         -- Trigger Rate Output (locClk domain)
+         trigRateOut => packetRate,
+         -- Clocks
+         locClk      => axilClk,
+         refClk      => axilClk);
 
 end rtl;
