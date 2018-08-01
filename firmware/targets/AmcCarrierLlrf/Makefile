@@ -39,15 +39,15 @@ export RTM_ETH = 0
 
 # AMC_TYPE_BAY0 & AMC_INTF_BAY0 are defined by application
 export AMC_TYPE_BAY0 = AmcMpsSfp
-export AMC_INTF_BAY0 = 
+export AMC_INTF_BAY0 = Version2
 
 # AMC_TYPE_BAY1 & AMC_INTF_BAY1 are defined by application
 export AMC_TYPE_BAY1 = AmcMpsSfp
-export AMC_INTF_BAY1 = 
+export AMC_INTF_BAY1 = Version2
 
 # RTM_TYPE & RTM_INTF are defined by application
 export RTM_TYPE = RtmEmpty
-export RTM_INTF = Version1
+export RTM_INTF = Version2
 
 ##########################################################################################
 # Applications must define the application common path where AppCore.vhd exists
