@@ -2,7 +2,7 @@
 -- File       : Application.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-14
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: Application Core's Top Level
 -------------------------------------------------------------------------------
@@ -240,28 +240,19 @@ begin
          TPD_G => TPD_G)
       port map (
          -- BSA/MPS Interface (usrClk domain)
-         usrClk        => axilClk,
-         usrRst        => axilRst,
-         timingStrobe  => timingBus.strobe,
-         timeStamp     => timingBus.message.timeStamp,
-         bsaQuantity0  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity1  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity2  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity3  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity4  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity5  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity6  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity7  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity8  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity9  => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity10 => timingBus.message.timeStamp(31 downto 0),
-         bsaQuantity11 => timingBus.message.timeStamp(31 downto 0),
-         mpsPermit     => timingBus.message.timeStamp(3 downto 0),
+         usrClk       => axilClk,
+         usrRst       => axilRst,
+         timingStrobe => timingBus.strobe,
+         timeStamp    => timingBus.message.timeStamp,
+         userValue    => (others => '1'),
+         bsaQuantity  => (others => (others => '0')),
+         bsaSevr      => (others => (others => '0')),
+         mpsPermit    => (others => '0'),
          -- TX Data Interface (txClk domain)
-         txClk         => clk,
-         txRst         => rst,
-         txData        => txData,
-         txDataK       => txDataK);
+         txClk        => clk,
+         txRst        => rst,
+         txData       => txData,
+         txDataK      => txDataK);
 
    ------------------------------
    -- Message Concentrator Module

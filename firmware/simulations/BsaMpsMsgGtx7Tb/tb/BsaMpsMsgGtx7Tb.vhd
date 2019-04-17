@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgGtx7Tb.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper Simulation Testbed
 -------------------------------------------------------------------------------
@@ -28,14 +28,14 @@ entity BsaMpsMsgGtx7Tb is end BsaMpsMsgGtx7Tb;
 
 architecture testbed of BsaMpsMsgGtx7Tb is
 
-   constant CLK_PERIOD_C : time    := 5.384 ns;
-   constant TPD_G        : time    := CLK_PERIOD_C/4;
-   constant TIMEOUT_C    : natural := 185;  -- ~ 1MHz strobe    
+   constant CLK_PERIOD_C : time    := 4.0 ns;
+   constant TPD_G        : time    := 1 ns;
+   constant TIMEOUT_C    : natural := 249;  -- ~ 1MHz strobe    
 
    type RegType is record
       timer  : natural range 0 to TIMEOUT_C;
       strobe : sl;
-      cnt    : slv(63 downto 0);
+      cnt    : slv(127 downto 0);
    end record RegType;
    constant REG_INIT_C : RegType := (
       timer  => 0,
@@ -120,7 +120,8 @@ begin
          usrClk        => clk,
          usrRst        => rst,
          timingStrobe  => r.strobe,
-         timeStamp     => r.cnt,
+         timeStamp     => r.cnt(63 downto 0),
+         userValue     => r.cnt(127 downto 0),
          bsaQuantity0  => r.cnt(31 downto 0),
          bsaQuantity1  => r.cnt(31 downto 0),
          bsaQuantity2  => r.cnt(31 downto 0),
@@ -133,6 +134,18 @@ begin
          bsaQuantity9  => r.cnt(31 downto 0),
          bsaQuantity10 => r.cnt(31 downto 0),
          bsaQuantity11 => r.cnt(31 downto 0),
+         bsaSevr0      => r.cnt(1 downto 0),
+         bsaSevr1      => r.cnt(1 downto 0),
+         bsaSevr2      => r.cnt(1 downto 0),
+         bsaSevr3      => r.cnt(1 downto 0),
+         bsaSevr4      => r.cnt(1 downto 0),
+         bsaSevr5      => r.cnt(1 downto 0),
+         bsaSevr6      => r.cnt(1 downto 0),
+         bsaSevr7      => r.cnt(1 downto 0),
+         bsaSevr8      => r.cnt(1 downto 0),
+         bsaSevr9      => r.cnt(1 downto 0),
+         bsaSevr10     => r.cnt(1 downto 0),
+         bsaSevr11     => r.cnt(1 downto 0),
          mpsPermit     => r.cnt(3 downto 0),
          -- GTX's Clock and Reset
          cPllRefClk    => clk,

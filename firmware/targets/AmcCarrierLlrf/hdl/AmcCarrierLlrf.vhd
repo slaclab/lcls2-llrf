@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : AmcCarrierLlrf.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-02-04
--- Last update: 2017-04-12
 -------------------------------------------------------------------------------
 -- Description: Firmware Target's Top Level
 -- 
@@ -238,29 +236,12 @@ begin
          gtTxP                => gtTxP,
          gtTxN                => gtTxN);
 
-   -- U_Core : entity work.AmcCarrierCoreAdv
-      -- generic map (
-         -- TPD_G                 => TPD_G,
-         -- BUILD_INFO_G          => BUILD_INFO_G,
-         -- SIM_SPEEDUP_G         => false,  -- false = Normal Operation, true = simulation
-         -- DISABLE_BSA_G         => false,  -- false = includes BSA engine, true = doesn't build the BSA engine
-         -- RTM_ETH_G             => false,  -- false = 10GbE over backplane, true = 1GbE over RTM
-         -- TIME_GEN_APP_G        => false,  -- false = normal application, true = timing generator application
-         -- TIME_GEN_EXTREF_G     => false,  -- false = normal application, true = timing generator using external reference
-         -- FSBL_G                => false,  -- false = Normal Operation, true = First Stage Boot loader
-         -- APP_TYPE_G            => APP_LLRF_TYPE_C,
-         -- ETH_USR_FRAME_LIMIT_G => 4096,   -- 4kB  
-         -- MPS_SLOT_G            => false)  -- false = Normal Operation, true = MPS message concentrator (Slot#2 only)            
-      -- port map (
-      
-      
    U_Core : entity work.AmcCarrierCoreBase
       generic map (
          TPD_G        => TPD_G,
          BUILD_INFO_G => BUILD_INFO_G,
          APP_TYPE_G   => APP_LLRF_TYPE_C)  -- Configured by application (refer to AmcCarrierPkg for list of all application types
-      port map (      
-            
+      port map (
          ----------------------
          -- Top Level Interface
          ----------------------

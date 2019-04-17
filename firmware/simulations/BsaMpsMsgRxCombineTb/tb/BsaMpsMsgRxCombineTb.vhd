@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCombineTb.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-05
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: BsaMpsMsgRxCombine Simulation Testbed
 -------------------------------------------------------------------------------
@@ -132,28 +132,19 @@ begin
          TPD_G => TPD_G)
       port map (
          -- BSA/MPS Interface (usrClk domain)
-         usrClk        => clk,
-         usrRst        => rst,
-         timingStrobe  => r.remoteTiming.strobe,
-         timeStamp     => r.remoteTiming.message.timeStamp,
-         bsaQuantity0  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity1  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity2  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity3  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity4  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity5  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity6  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity7  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity8  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity9  => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity10 => r.remoteTiming.message.timeStamp(31 downto 0),
-         bsaQuantity11 => r.remoteTiming.message.timeStamp(31 downto 0),
-         mpsPermit     => r.remoteTiming.message.timeStamp(3 downto 0),
+         usrClk       => clk,
+         usrRst       => rst,
+         timingStrobe => r.remoteTiming.strobe,
+         timeStamp    => r.remoteTiming.message.timeStamp,
+         userValue    => (others => '0'),
+         bsaQuantity  => (others => (others => '0')),
+         bsaSevr      => (others => (others => '0')),
+         mpsPermit    => r.remoteTiming.message.timeStamp(3 downto 0),
          -- TX Data Interface (txClk domain)
-         txClk         => clk,
-         txRst         => rst,
-         txData        => txData,
-         txDataK       => txDataK);
+         txClk        => clk,
+         txRst        => rst,
+         txData       => txData,
+         txDataK      => txDataK);
 
    --------------------
    -- BSA/MPS Receivers
@@ -182,7 +173,7 @@ begin
             txDataK         => txDataK,
             -- Remote LLRF BSA/MPS Ports
             rxClk           => clk,
-            rxRst           => rst,            
+            rxRst           => rst,
             gtRefClk        => clk,
             gtRxP           => linkP(i),
             gtRxN           => linkN(i),

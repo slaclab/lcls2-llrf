@@ -1,4 +1,3 @@
-export GIT_BYPASS = 1
 ##########################################################################################
 # Applications must define the 32-bitFirmware Version Number
 ##########################################################################################
@@ -61,7 +60,7 @@ export COMMON_FILE = AppCommon
 #     If REMOVE_UNUSED_CODE = 0, all source code is kept after importing to Vivado project
 #     If REMOVE_UNUSED_CODE = 1, all unused source code is removed from Vivado project
 ##########################################################################################
-export REMOVE_UNUSED_CODE = 1
+export REMOVE_UNUSED_CODE = 0
 
 ##########################################################################################
 ############################  DO NOT EDIT THE CODE BELOW  ################################

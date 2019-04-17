@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxFramerReg.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-05
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer's register module
 -------------------------------------------------------------------------------
@@ -46,6 +46,7 @@ entity BsaMpsMsgRxFramerReg is
       errPktLen       : in  sl;
       errCrc          : in  sl;
       sofDet          : in  sl;
+      userValue       : in  slv(127 downto 0);
       gtRst           : out sl;
       -- AXI-Lite Interface (axilClk domain)
       axilClk         : in  sl;
@@ -93,6 +94,7 @@ architecture rtl of BsaMpsMsgRxFramerReg is
    signal pktLength       : slv(7 downto 0);
    signal packetRate      : slv(31 downto 0);
    signal sofRate         : slv(31 downto 0);
+   signal userValueSync   : slv(127 downto 0);
    signal gtRxFifoErr     : sl;
 
    -- attribute dont_touch      : string;
@@ -101,7 +103,8 @@ architecture rtl of BsaMpsMsgRxFramerReg is
 begin
 
    comb : process (axilReadMaster, axilRst, axilWriteMaster, packetRate, r,
-                   rxBufStatusSync, sofRate, statusCnt, statusOut) is
+                   rxBufStatusSync, sofRate, statusCnt, statusOut,
+                   userValueSync) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndPointType;
    begin
@@ -130,6 +133,8 @@ begin
       axiSlaveRegisterR(axilEp, x"404", 0, rxBufStatusSync);
       axiSlaveRegisterR(axilEp, x"410", 0, packetRate);
       axiSlaveRegisterR(axilEp, x"414", 0, sofRate);
+
+      axiSlaveRegisterR(axilEp, x"500", 0, userValueSync);
 
       -- Map the write registers
       axiSlaveRegister(axilEp, x"700", 0, v.rxPolarity);
@@ -173,7 +178,7 @@ begin
       port map (
          arst   => r.gtRst,
          clk    => axilClk,
-         rstOut => gtRst);-- ASYNC reset
+         rstOut => gtRst);                                -- ASYNC reset
 
    U_packetRate : entity work.SyncTrigRate
       generic map (
@@ -216,6 +221,17 @@ begin
          din    => rxBufStatus,
          rd_clk => axilClk,
          dout   => rxBufStatusSync);
+
+   U_userValue : entity work.SynchronizerFifo
+      generic map (
+         TPD_G        => TPD_G,
+         DATA_WIDTH_G => 128)
+      port map (
+         wr_clk => rxClk,
+         wr_en  => fifoWr,
+         din    => userValue,
+         rd_clk => axilClk,
+         dout   => userValueSync);
 
    U_SyncOutVec : entity work.SynchronizerVector
       generic map (

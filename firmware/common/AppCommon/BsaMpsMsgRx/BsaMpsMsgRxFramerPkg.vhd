@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxFramerPkg.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer Package File
 -------------------------------------------------------------------------------
@@ -22,17 +22,19 @@ use work.StdRtlPkg.all;
 
 package BsaMpsMsgRxFramerPkg is
 
-   constant RX_MSG_FIFO_WIDTH_C : positive := 452;
+   constant RX_MSG_FIFO_WIDTH_C : positive := 476;
 
    type MsgType is record
       mpsPermit   : slv(3 downto 0);
       timeStamp   : slv(63 downto 0);
+      bsaSevr     : Slv2Array(11 downto 0);
       bsaQuantity : Slv32Array(11 downto 0);
    end record MsgType;
    type MsgArray is array (natural range <>) of MsgType;
    constant MSG_INIT_C : MsgType := (
       mpsPermit   => (others => '0'),
       timeStamp   => (others => '0'),
+      bsaSevr     => (others => (others => '0')),
       bsaQuantity => (others => (others => '0')));
 
    function fromSlv (dout : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0)) return MsgType;
@@ -49,7 +51,7 @@ package body BsaMpsMsgRxFramerPkg is
       -- Reset the variables
       retVar := MSG_INIT_C;
 
-      -- Load the BSA array
+      -- Load the BSA Data
       for i in 11 downto 0 loop
          retVar.bsaQuantity(i) := dout((i*32)+31 downto (i*32));
       end loop;
@@ -59,6 +61,11 @@ package body BsaMpsMsgRxFramerPkg is
 
       -- Load the MPS permit
       retVar.mpsPermit := dout(451 downto 448);
+
+      -- Load the BSA Severity 
+      for i in 11 downto 0 loop
+         retVar.bsaSevr(i) := dout((i*2)+453 downto (i*2)+452);
+      end loop;
 
       return retVar;
    end function;
@@ -70,7 +77,7 @@ package body BsaMpsMsgRxFramerPkg is
       -- Reset the variables
       retVar := (others => '0');
 
-      -- Load the BSA array
+      -- Load the BSA Data
       for i in 11 downto 0 loop
          retVar((i*32)+31 downto (i*32)) := msg.bsaQuantity(i);
       end loop;
@@ -80,6 +87,11 @@ package body BsaMpsMsgRxFramerPkg is
 
       -- Load the MPS permit
       retVar(451 downto 448) := msg.mpsPermit;
+
+      -- Load the BSA Severity 
+      for i in 11 downto 0 loop
+         retVar((i*2)+453 downto (i*2)+452) := msg.bsaSevr(i);
+      end loop;
 
       return retVar;
    end function;

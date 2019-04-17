@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : Kc705BsaMspMsgTx.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2017-03-15
 -------------------------------------------------------------------------------
 -- Description: Development Board Example
 -------------------------------------------------------------------------------
@@ -46,48 +44,12 @@ end Kc705BsaMspMsgTx;
 
 architecture top_level of Kc705BsaMspMsgTx is
 
-   component BsaMspMsgTxCore
-      port (
-         usrClk        : in  std_logic;
-         usrRst        : in  std_logic;
-         timingStrobe  : in  std_logic;
-         timeStamp     : in  std_logic_vector (63 downto 0);
-         bsaQuantity0  : in  std_logic_vector (31 downto 0);
-         bsaQuantity1  : in  std_logic_vector (31 downto 0);
-         bsaQuantity2  : in  std_logic_vector (31 downto 0);
-         bsaQuantity3  : in  std_logic_vector (31 downto 0);
-         bsaQuantity4  : in  std_logic_vector (31 downto 0);
-         bsaQuantity5  : in  std_logic_vector (31 downto 0);
-         bsaQuantity6  : in  std_logic_vector (31 downto 0);
-         bsaQuantity7  : in  std_logic_vector (31 downto 0);
-         bsaQuantity8  : in  std_logic_vector (31 downto 0);
-         bsaQuantity9  : in  std_logic_vector (31 downto 0);
-         bsaQuantity10 : in  std_logic_vector (31 downto 0);
-         bsaQuantity11 : in  std_logic_vector (31 downto 0);
-         mpsPermit     : in  std_logic_vector (3 downto 0);
-         cPllRefClk    : in  std_logic;
-         stableClk     : in  std_logic;
-         stableRst     : in  std_logic;
-         cPllLock      : out std_logic;
-         txPreCursor   : in  std_logic_vector (4 downto 0);
-         txPostCursor  : in  std_logic_vector (4 downto 0);
-         txDiffCtrl    : in  std_logic_vector (3 downto 0);
-         gtTxP         : out std_logic;
-         gtTxN         : out std_logic;
-         gtRxP         : in  std_logic;
-         gtRxN         : in  std_logic);
-   end component;
-   attribute SYN_BLACK_BOX                        : boolean;
-   attribute SYN_BLACK_BOX of BsaMspMsgTxCore     : component is true;
-   attribute BLACK_BOX_PAD_PIN                    : string;
-   attribute BLACK_BOX_PAD_PIN of BsaMspMsgTxCore : component is "usrClk,usrRst,timingStrobe,timeStamp[63:0],bsaQuantity0[31:0],bsaQuantity1[31:0],bsaQuantity2[31:0],bsaQuantity3[31:0],bsaQuantity4[31:0],bsaQuantity5[31:0],bsaQuantity6[31:0],bsaQuantity7[31:0],bsaQuantity8[31:0],bsaQuantity9[31:0],bsaQuantity10[31:0],bsaQuantity11[31:0],mpsPermit[3:0],cPllRefClk,stableClk,stableRst,cPllLock,txPolarity,txPreCursor[4:0],txPostCursor[4:0],txDiffCtrl[3:0],gtTxP,gtTxN,gtRxP,gtRxN";
-
    constant TIMEOUT_C : natural := 185;  -- ~ 1MHz strobe 
 
    type RegType is record
       timer  : natural range 0 to TIMEOUT_C;
       strobe : sl;
-      cnt    : slv(63 downto 0);
+      cnt    : slv(127 downto 0);
    end record RegType;
    constant REG_INIT_C : RegType := (
       timer  => 0,
@@ -106,6 +68,7 @@ architecture top_level of Kc705BsaMspMsgTx is
 
    signal timingStrobe  : sl;
    signal timeStamp     : slv(63 downto 0);
+   signal userValue     : slv(127 downto 0);
    signal bsaQuantity0  : slv(31 downto 0);
    signal bsaQuantity1  : slv(31 downto 0);
    signal bsaQuantity2  : slv(31 downto 0);
@@ -118,6 +81,18 @@ architecture top_level of Kc705BsaMspMsgTx is
    signal bsaQuantity9  : slv(31 downto 0);
    signal bsaQuantity10 : slv(31 downto 0);
    signal bsaQuantity11 : slv(31 downto 0);
+   signal bsaSevr0      : slv(1 downto 0);
+   signal bsaSevr1      : slv(1 downto 0);
+   signal bsaSevr2      : slv(1 downto 0);
+   signal bsaSevr3      : slv(1 downto 0);
+   signal bsaSevr4      : slv(1 downto 0);
+   signal bsaSevr5      : slv(1 downto 0);
+   signal bsaSevr6      : slv(1 downto 0);
+   signal bsaSevr7      : slv(1 downto 0);
+   signal bsaSevr8      : slv(1 downto 0);
+   signal bsaSevr9      : slv(1 downto 0);
+   signal bsaSevr10     : slv(1 downto 0);
+   signal bsaSevr11     : slv(1 downto 0);
    signal mpsPermit     : slv(3 downto 0);
 
 begin
@@ -173,13 +148,16 @@ begin
          asyncRst => extRst,
          syncRst  => stableRst);
 
-   U_Core : BsaMspMsgTxCore
+   U_Core : entity work.BsaMspMsgTxCore
+      generic map(
+         TPD_G => TPD_G)
       port map (
          -- BSA/MPS Interface
          usrClk        => usrClk,
          usrRst        => usrRst,
          timingStrobe  => timingStrobe,
          timeStamp     => timeStamp,
+         userValue     => userValue,
          bsaQuantity0  => bsaQuantity0,
          bsaQuantity1  => bsaQuantity1,
          bsaQuantity2  => bsaQuantity2,
@@ -192,6 +170,18 @@ begin
          bsaQuantity9  => bsaQuantity9,
          bsaQuantity10 => bsaQuantity10,
          bsaQuantity11 => bsaQuantity11,
+         bsaSevr0      => bsaSevr0,
+         bsaSevr1      => bsaSevr1,
+         bsaSevr2      => bsaSevr2,
+         bsaSevr3      => bsaSevr3,
+         bsaSevr4      => bsaSevr4,
+         bsaSevr5      => bsaSevr5,
+         bsaSevr6      => bsaSevr6,
+         bsaSevr7      => bsaSevr7,
+         bsaSevr8      => bsaSevr8,
+         bsaSevr9      => bsaSevr9,
+         bsaSevr10     => bsaSevr10,
+         bsaSevr11     => bsaSevr11,
          mpsPermit     => mpsPermit,
          -- GTX's Clock and Reset
          cPllRefClk    => refClk(0),    -- 185.714 MHz
@@ -240,7 +230,8 @@ begin
 
       -- Outputs
       timingStrobe  <= r.strobe;
-      timeStamp     <= r.cnt;
+      timeStamp     <= r.cnt(63 downto 0);
+      userValue     <= r.cnt(127 downto 0);
       bsaQuantity0  <= r.cnt(31 downto 0);
       bsaQuantity1  <= r.cnt(31 downto 0);
       bsaQuantity2  <= r.cnt(31 downto 0);
@@ -253,6 +244,18 @@ begin
       bsaQuantity9  <= r.cnt(31 downto 0);
       bsaQuantity10 <= r.cnt(31 downto 0);
       bsaQuantity11 <= r.cnt(31 downto 0);
+      bsaSevr0      <= r.cnt(1 downto 0);
+      bsaSevr1      <= r.cnt(1 downto 0);
+      bsaSevr2      <= r.cnt(1 downto 0);
+      bsaSevr3      <= r.cnt(1 downto 0);
+      bsaSevr4      <= r.cnt(1 downto 0);
+      bsaSevr5      <= r.cnt(1 downto 0);
+      bsaSevr6      <= r.cnt(1 downto 0);
+      bsaSevr7      <= r.cnt(1 downto 0);
+      bsaSevr8      <= r.cnt(1 downto 0);
+      bsaSevr9      <= r.cnt(1 downto 0);
+      bsaSevr10     <= r.cnt(1 downto 0);
+      bsaSevr11     <= r.cnt(1 downto 0);
       mpsPermit     <= r.cnt(3 downto 0);
 
    end process comb;

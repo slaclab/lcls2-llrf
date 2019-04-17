@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxFramer.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-04
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
@@ -67,8 +67,11 @@ architecture rtl of BsaMpsMsgRxFramer is
 
    type StateType is (
       IDLE_S,
+      USER_S,
       TS_S,
-      BSA_S,
+      MPS_S,
+      BSA_SEVR_S,
+      BSA_DATA_S,
       CRC_LO_S,
       CRC_HI_S,
       LAST_S);
@@ -83,7 +86,8 @@ architecture rtl of BsaMpsMsgRxFramer is
       crcRst    : sl;
       crcData   : slv(15 downto 0);
       crc       : slv(31 downto 0);
-      wrd       : natural range 0 to 3;
+      userValue : slv(127 downto 0);
+      wrd       : natural range 0 to 7;
       cnt       : natural range 0 to 11;
       sofDet    : sl;
       fifoWr    : sl;
@@ -100,6 +104,7 @@ architecture rtl of BsaMpsMsgRxFramer is
       crcRst    => '1',
       crcData   => (others => '0'),
       crc       => (others => '0'),
+      userValue => (others => '0'),
       wrd       => 0,
       cnt       => 0,
       sofDet    => '0',
@@ -144,15 +149,36 @@ begin
             -- Reset the counters
             v.wrd := 0;
             v.cnt := 0;
-            -- Check for start of packet
-            if (r.rxValid = '1') and (r.rxdataK = "01") and (r.rxData(7 downto 0) = K28_5_C) then
+            -- Check for start of packet and Version 1
+            if (r.rxValid = '1') and (r.rxdataK = "01") and (r.rxData(7 downto 0) = K28_5_C) and (r.rxData(15 downto 8) = x"01") then
                -- Forward the data to CRC 
-               v.crcValid      := '1';
-               v.crcData       := r.rxData;
-               -- Save the bus value
-               v.msg.mpsPermit := r.rxData(11 downto 8);
+               v.crcValid := '1';
+               v.crcData  := r.rxData;
                -- Next state
-               v.state         := TS_S;
+               v.state    := USER_S;
+            end if;
+         ----------------------------------------------------------------------
+         when USER_S =>
+            -- Check for valid data
+            if (r.rxValid = '1') and (r.rxdataK = "00") then
+               -- Forward the data to CRC 
+               v.crcValid                                   := '1';
+               v.crcData                                    := r.rxData;
+               -- Save the bus value
+               v.userValue((r.wrd*16)+15 downto (r.wrd*16)) := r.rxData;
+               -- Check the counter
+               if (r.wrd = 7) then
+                  -- Reset the counter
+                  v.wrd   := 0;
+                  -- Next State
+                  v.state := TS_S;
+               else
+                  -- Increment the counter
+                  v.wrd := r.wrd + 1;
+               end if;
+            else
+               -- Next state
+               v.state := IDLE_S;
             end if;
          ----------------------------------------------------------------------
          when TS_S =>
@@ -168,7 +194,7 @@ begin
                   -- Reset the counter
                   v.wrd   := 0;
                   -- Next State
-                  v.state := BSA_S;
+                  v.state := MPS_S;
                else
                   -- Increment the counter
                   v.wrd := r.wrd + 1;
@@ -178,7 +204,49 @@ begin
                v.state := IDLE_S;
             end if;
          ----------------------------------------------------------------------
-         when BSA_S =>
+         when MPS_S =>
+            -- Check for valid data
+            if (r.rxValid = '1') and (r.rxdataK = "00") then
+               -- Forward the data to CRC 
+               v.crcValid       := '1';
+               v.crcData        := r.rxData;
+               -- Save the bus value
+               v.msg.mpsPermit  := r.rxData(3 downto 0);
+               v.msg.bsaSevr(0) := r.rxData(5 downto 4);
+               v.msg.bsaSevr(1) := r.rxData(7 downto 6);
+               v.msg.bsaSevr(2) := r.rxData(9 downto 8);
+               v.msg.bsaSevr(3) := r.rxData(11 downto 10);
+               v.msg.bsaSevr(4) := r.rxData(13 downto 12);
+               v.msg.bsaSevr(5) := r.rxData(15 downto 14);
+               -- Next State
+               v.state          := BSA_SEVR_S;
+            else
+               -- Next state
+               v.state := IDLE_S;
+            end if;
+         ----------------------------------------------------------------------
+         when BSA_SEVR_S =>
+            -- Check for valid data
+            if (r.rxValid = '1') and (r.rxdataK = "00") then
+               -- Forward the data to CRC 
+               v.crcValid        := '1';
+               v.crcData         := r.rxData;
+               -- Save the bus value
+               -- Note: r.rxData(3 downto 0) not used and undefined
+               v.msg.bsaSevr(6)  := r.rxData(5 downto 4);
+               v.msg.bsaSevr(7)  := r.rxData(7 downto 6);
+               v.msg.bsaSevr(8)  := r.rxData(9 downto 8);
+               v.msg.bsaSevr(9)  := r.rxData(11 downto 10);
+               v.msg.bsaSevr(10) := r.rxData(13 downto 12);
+               v.msg.bsaSevr(11) := r.rxData(15 downto 14);
+               -- Next State
+               v.state           := BSA_DATA_S;
+            else
+               -- Next state
+               v.state := IDLE_S;
+            end if;
+         ----------------------------------------------------------------------
+         when BSA_DATA_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
                -- Forward the data to CRC 
@@ -314,7 +382,7 @@ begin
          BRAM_EN_G    => false,
          FWFT_EN_G    => true,
          DATA_WIDTH_G => RX_MSG_FIFO_WIDTH_C,
-         ADDR_WIDTH_G => 5)             -- 32 us buffer
+         ADDR_WIDTH_G => 4)
       port map (
          rst      => rxRst,
          -- Write Ports
@@ -349,13 +417,14 @@ begin
          rxBufStatus     => rxBufStatus,
          rxPolarity      => rxPolarity,
          txPolarity      => txPolarity,
-         loopback        => loopback,      
+         loopback        => loopback,
          cPllLock        => cPllLock,
          fifoWr          => r.fifoWr,
          overflow        => overflow,
          errPktLen       => r.errPktLen,
          errCrc          => r.errCrc,
          sofDet          => r.sofDet,
+         userValue       => r.userValue,
          gtRst           => gtRst,
          -- AXI-Lite Interface (axilClk domain)
          axilClk         => axilClk,

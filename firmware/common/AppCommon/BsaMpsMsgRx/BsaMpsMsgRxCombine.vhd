@@ -2,7 +2,7 @@
 -- File       : BsaMpsMsgRxCombine.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -- Created    : 2017-03-13
--- Last update: 2017-04-15
+-- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: Combines the timingBus with the two remote links to form the 
 --              diagnosticBus message.
@@ -112,8 +112,8 @@ begin
          BRAM_EN_G    => false,
          FWFT_EN_G    => true,
          DATA_WIDTH_G => TIMING_MESSAGE_BITS_C,
-         ADDR_WIDTH_G => 5,             --32 samples
-         FULL_THRES_G => 24)            -- 24 sample threshold
+         ADDR_WIDTH_G => 4,             -- 2^4 = 16 samples
+         FULL_THRES_G => 8)             -- 8 sample threshold
       port map (
          rst       => axilRst,
          clk       => axilClk,
@@ -158,56 +158,69 @@ begin
             v.sevr    := (others => "11");
             -- Check if local FIFO has data and not busy
             if (fifoValid = '1') and (busy = '0') then
+
                -- Check the local FIFO threshold 
                if (progFull = '1') then
                   -- Next state
                   v.state := CHECK_ALIGN_S;
+
                -- Check if either of the remote FIFOs have data
                elsif (uOr(remoteValid) = '1') then
                   -- Next state
                   v.state := CHECK_ALIGN_S;
                end if;
+
             end if;
          ----------------------------------------------------------------------
          when CHECK_ALIGN_S =>
             -- Loop through the remote channels
             for i in 1 downto 0 loop
+
                -- Check if behind in time with respect to local FIFO
                if (remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1') then
                   -- Blow off data
                   v.remoteRd(i) := '1';
                end if;
+
                -- Check if aligned with respect to local FIFO
                if (remoteMsg(i).timeStamp = timingMessage.timeStamp) and (remoteValid(i) = '1') then
                   -- Set the flags
                   v.aligned(i) := '1';
                   v.sevr(i)    := "00";
                end if;
+
                -- Check if ahead in time with respect to local FIFO
                if (remoteMsg(i).timeStamp > timingMessage.timeStamp) and (remoteValid(i) = '1') then
                   -- Set the flag
                   remoteAhead(i) := '1';
                end if;
+
             end loop;
+
             -- Check if both remote channels are aligned to local channel
             if (v.aligned = "11") then
                -- Next state
                v.state := SEND_MSG_S;
+
             -- Check if both remote channels are ahead of time
             elsif (remoteAhead = "11") then
                -- Next state
                v.state := SEND_MSG_S;
+
             -- Check if link0 aligned but link1 ahead
             elsif (v.aligned = "01") and (remoteAhead = "10") then
                -- Next state
                v.state := SEND_MSG_S;
+
             -- Check if link1 aligned but link0 ahead
             elsif (v.aligned = "10") and (remoteAhead = "01") then
                -- Next state
                v.state := SEND_MSG_S;
+
             elsif (progFull = '1') then
                -- Next state
                v.state := SEND_MSG_S;
+
             else
                -- Next state
                v.state := IDLE_S;
@@ -218,31 +231,50 @@ begin
             v.remoteRd             := r.aligned;
             v.fifoRd               := '1';
             v.diagnosticBus.strobe := '1';
+
             -- Update the data field
             for i in 11 downto 0 loop
+
                -- Link 0
-               v.diagnosticBus.sevr(i+0)  := r.sevr(0);
-               v.diagnosticBus.data(i+0)  := remoteMsg(0).bsaQuantity(i);
+               v.diagnosticBus.sevr(i+0) := remoteMsg(0).bsaSevr(i);
+               v.diagnosticBus.data(i+0) := remoteMsg(0).bsaQuantity(i);
+
                -- Link 1
-               v.diagnosticBus.sevr(i+12) := r.sevr(1);
+               v.diagnosticBus.sevr(i+12) := remoteMsg(1).bsaSevr(i);
                v.diagnosticBus.data(i+12) := remoteMsg(1).bsaQuantity(i);
+
             end loop;
+
             -- Link 0
-            v.diagnosticBus.sevr(30)      := r.sevr(0);
-            v.diagnosticBus.data(30)      := x"0000_000" & remoteMsg(0).mpsPermit;
+            v.diagnosticBus.sevr(30) := r.sevr(0);
+            if r.sevr(0) = "00" then
+               v.diagnosticBus.data(30) := x"0000_000" & remoteMsg(0).mpsPermit;
+            else
+               v.diagnosticBus.data(30) := x"0000_0000";
+            end if;
+
             -- Link 1
-            v.diagnosticBus.sevr(31)      := r.sevr(1);
-            v.diagnosticBus.data(31)      := x"0000_000" & remoteMsg(1).mpsPermit;
+            v.diagnosticBus.sevr(31) := r.sevr(1);
+            if r.sevr(1) = "00" then
+               v.diagnosticBus.data(31) := x"0000_000" & remoteMsg(1).mpsPermit;
+            else
+               v.diagnosticBus.data(31) := x"0000_0000";
+            end if;
+
             -- Update the message field
             v.diagnosticBus.timingMessage := timingMessage;
+
             -- Loop through the remote channels
             for i in 1 downto 0 loop
+
                -- Check for drop due to misalignment
                if (r.aligned(i) = '0') then
                   -- Increment the counter
                   v.dropCnt(i) := r.dropCnt(i) + 1;
                end if;
+
             end loop;
+
             -- Next state
             v.state := IDLE_S;
       ----------------------------------------------------------------------

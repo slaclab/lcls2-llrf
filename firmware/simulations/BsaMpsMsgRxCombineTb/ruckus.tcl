@@ -8,7 +8,7 @@ loadRuckusTcl $::env(TOP_DIR)/submodules
 loadSource -sim_only -dir "$::DIR_PATH/tb/"
 
 # Remove the .DCP and use the .XCI IP core instead
-remove_files [get_files {BsaMpsGthCore.dcp}]
+remove_files [get_files {*.dcp}]
 loadIpCore -path "$::env(TOP_DIR)/common/AppCommon/BsaMpsMsgRx/ip/BsaMpsGthCore.xci"
 
 # Set the top level synth_1 and sim_1

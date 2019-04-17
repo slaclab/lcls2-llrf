@@ -188,6 +188,15 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       sizeBits: 1
       description: GtRxFifoErr Status Bit  
     #########################################################
+    UserValue:
+      at:
+        offset: 0x500
+      class: IntField
+      name: UserValue
+      mode: RO
+      sizeBits: 128
+      description: Remote UserValue Status Counter        
+    #########################################################
     RxPolarity:
       at:
         offset: 0x700
