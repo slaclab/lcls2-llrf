@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
--- File       : AmcCarrierLlrf.vhd
+-- File       : AmcCarrierLlrfBsaMpsMsgRx.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
 -- Description: Firmware Target's Top Level
@@ -27,7 +27,7 @@ use work.TimingPkg.all;
 use work.AmcCarrierPkg.all;
 use work.AppTopPkg.all;
 
-entity AmcCarrierLlrf is
+entity AmcCarrierLlrfBsaMpsMsgRx is
    generic (
       TPD_G        : time := 1 ns;
       BUILD_INFO_G : BuildInfoType);
@@ -111,9 +111,9 @@ entity AmcCarrierLlrf is
       -- SYSMON Ports
       vPIn             : in    sl;
       vNIn             : in    sl);
-end AmcCarrierLlrf;
+end AmcCarrierLlrfBsaMpsMsgRx;
 
-architecture top_level of AmcCarrierLlrf is
+architecture top_level of AmcCarrierLlrfBsaMpsMsgRx is
 
    -- AXI-Lite Interface (axilClk domain)
    signal axilClk              : sl;
