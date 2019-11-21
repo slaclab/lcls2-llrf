@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxCore.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2017-04-05
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
@@ -20,8 +18,19 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+
+library amc_carrier_core;
+use amc_carrier_core.AmcCarrierPkg.all;
+
+library lcls_timing_core;
+use lcls_timing_core.TimingPkg.all;
+
+library lcls2_llrf_bsa_mps_tx_core;
+
 use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxCore is

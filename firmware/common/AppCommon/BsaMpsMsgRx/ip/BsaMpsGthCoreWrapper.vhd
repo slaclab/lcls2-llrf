@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsGthCoreWrapper.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2017-04-14
 -------------------------------------------------------------------------------
 -- Description: Wrapper for BsaMpsGthCore
 -------------------------------------------------------------------------------
@@ -20,7 +18,8 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-use work.StdRtlPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
 
 library UNISIM;
 use UNISIM.VCOMPONENTS.all;
@@ -207,7 +206,7 @@ begin
       end process;
 
       wdtReset <= (not(dataValid) and linkUp) or wdtRstOneShot;
-      U_PwrUpRstRx : entity work.PwrUpRst
+      U_PwrUpRstRx : entity surf.PwrUpRst
          generic map(
             TPD_G          => TPD_G,
             IN_POLARITY_G  => '1',
@@ -218,7 +217,7 @@ begin
             clk    => rxClk,
             rstOut => wdtRst);
 
-      U_WatchDogRst : entity work.WatchDogRst
+      U_WatchDogRst : entity surf.WatchDogRst
          generic map(
             TPD_G      => TPD_G,
             DURATION_G => DURATION_1S_C)
@@ -227,7 +226,7 @@ begin
             monIn  => linkUp,
             rstOut => wdtRstOneShot);
 
-      U_SyncOutVec : entity work.SynchronizerVector
+      U_SyncOutVec : entity surf.SynchronizerVector
          generic map (
             TPD_G   => TPD_G,
             WIDTH_G => 1)

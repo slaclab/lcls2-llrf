@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxCombine.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: Combines the timingBus with the two remote links to form the 
 --              diagnosticBus message.
@@ -21,10 +19,19 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
-use work.TimingPkg.all;
-use work.AmcCarrierPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+
+library amc_carrier_core;
+use amc_carrier_core.AmcCarrierPkg.all;
+
+library lcls_timing_core;
+use lcls_timing_core.TimingPkg.all;
+
+library lcls2_llrf_bsa_mps_tx_core;
+
 use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxCombine is
@@ -106,14 +113,14 @@ architecture rtl of BsaMpsMsgRxCombine is
 
 begin
 
-   U_Fifo : entity work.FifoSync
+   U_Fifo : entity surf.FifoSync
       generic map (
-         TPD_G        => TPD_G,
-         BRAM_EN_G    => false,
-         FWFT_EN_G    => true,
-         DATA_WIDTH_G => TIMING_MESSAGE_BITS_C,
-         ADDR_WIDTH_G => 4,             -- 2^4 = 16 samples
-         FULL_THRES_G => 8)             -- 8 sample threshold
+         TPD_G         => TPD_G,
+         MEMORY_TYPE_G => "distributed",
+         FWFT_EN_G     => true,
+         DATA_WIDTH_G  => TIMING_MESSAGE_BITS_C,
+         ADDR_WIDTH_G  => 4,             -- 2^4 = 16 samples
+         FULL_THRES_G  => 8)             -- 8 sample threshold
       port map (
          rst       => axilRst,
          clk       => axilClk,
@@ -322,7 +329,7 @@ begin
       end if;
    end process seq;
 
-   U_packetRate : entity work.SyncTrigRate
+   U_packetRate : entity surf.SyncTrigRate
       generic map (
          TPD_G          => TPD_G,
          COMMON_CLK_G   => false,

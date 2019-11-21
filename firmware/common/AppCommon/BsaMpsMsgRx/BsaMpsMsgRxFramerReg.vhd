@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxFramerReg.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer's register module
 -------------------------------------------------------------------------------
@@ -20,8 +18,9 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiLitePkg.all;
 
 entity BsaMpsMsgRxFramerReg is
    generic (
@@ -170,7 +169,7 @@ begin
       end if;
    end process seq;
 
-   U_gtRst : entity work.PwrUpRst
+   U_gtRst : entity surf.PwrUpRst
       generic map (
          TPD_G      => TPD_G,
          -- DURATION_G => 250)  -- 100 ms
@@ -180,7 +179,7 @@ begin
          clk    => axilClk,
          rstOut => gtRst);                                -- ASYNC reset
 
-   U_packetRate : entity work.SyncTrigRate
+   U_packetRate : entity surf.SyncTrigRate
       generic map (
          TPD_G          => TPD_G,
          COMMON_CLK_G   => false,
@@ -196,7 +195,7 @@ begin
          locClk      => rxClk,
          refClk      => axilClk);
 
-   U_sofRate : entity work.SyncTrigRate
+   U_sofRate : entity surf.SyncTrigRate
       generic map (
          TPD_G          => TPD_G,
          COMMON_CLK_G   => false,
@@ -212,7 +211,7 @@ begin
          locClk      => rxClk,
          refClk      => axilClk);
 
-   U_rxBufStatus : entity work.SynchronizerFifo
+   U_rxBufStatus : entity surf.SynchronizerFifo
       generic map (
          TPD_G        => TPD_G,
          DATA_WIDTH_G => 3)
@@ -222,7 +221,7 @@ begin
          rd_clk => axilClk,
          dout   => rxBufStatusSync);
 
-   U_userValue : entity work.SynchronizerFifo
+   U_userValue : entity surf.SynchronizerFifo
       generic map (
          TPD_G        => TPD_G,
          DATA_WIDTH_G => 128)
@@ -233,7 +232,7 @@ begin
          rd_clk => axilClk,
          dout   => userValueSync);
 
-   U_SyncOutVec : entity work.SynchronizerVector
+   U_SyncOutVec : entity surf.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
          WIDTH_G => 3)
@@ -248,7 +247,7 @@ begin
 
    gtRxFifoErr <= rxBufStatus(2) and rxLinkUp;
 
-   U_SyncStatusVector : entity work.SyncStatusVector
+   U_SyncStatusVector : entity surf.SyncStatusVector
       generic map (
          TPD_G          => TPD_G,
          OUT_POLARITY_G => '1',

@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxFramer.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
@@ -20,8 +18,19 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiLitePkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+
+library amc_carrier_core;
+use amc_carrier_core.AmcCarrierPkg.all;
+
+library lcls_timing_core;
+use lcls_timing_core.TimingPkg.all;
+
+library lcls2_llrf_bsa_mps_tx_core;
+
 use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxFramer is
@@ -361,7 +370,7 @@ begin
    -------------
    -- CRC Engine
    -------------
-   U_Crc32 : entity work.Crc32Parallel
+   U_Crc32 : entity surf.Crc32Parallel
       generic map (
          -- TPD_G        => TPD_G,
          BYTE_WIDTH_G => 2)
@@ -376,13 +385,13 @@ begin
    ------------
    -- SYNC FIFO
    ------------
-   U_Fifo : entity work.FifoAsync
+   U_Fifo : entity surf.FifoAsync
       generic map (
-         TPD_G        => TPD_G,
-         BRAM_EN_G    => false,
-         FWFT_EN_G    => true,
-         DATA_WIDTH_G => RX_MSG_FIFO_WIDTH_C,
-         ADDR_WIDTH_G => 4)
+         TPD_G         => TPD_G,
+         MEMORY_TYPE_G => "distributed",
+         FWFT_EN_G     => true,
+         DATA_WIDTH_G  => RX_MSG_FIFO_WIDTH_C,
+         ADDR_WIDTH_G  => 5)
       port map (
          rst      => rxRst,
          -- Write Ports

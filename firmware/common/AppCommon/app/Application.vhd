@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : Application.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: Application Core's Top Level
 -------------------------------------------------------------------------------
@@ -20,11 +18,19 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.AxiLitePkg.all;
-use work.TimingPkg.all;
-use work.AmcCarrierPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+
+library amc_carrier_core;
+use amc_carrier_core.AmcCarrierPkg.all;
+
+library lcls_timing_core;
+use lcls_timing_core.TimingPkg.all;
+
+library lcls2_llrf_bsa_mps_tx_core;
+
 use work.BsaMpsMsgRxFramerPkg.all;
 
 entity Application is
@@ -151,7 +157,7 @@ begin
    diagnosticClk <= axilClk;
    diagnosticRst <= axilRst;
 
-   U_ClockManager : entity work.ClockManagerUltraScale
+   U_ClockManager : entity surf.ClockManagerUltraScale
       generic map(
          TPD_G              => TPD_G,
          TYPE_G             => "MMCM",
@@ -174,7 +180,7 @@ begin
    ---------------------
    -- AXI-Lite Crossbar
    ---------------------
-   U_XBAR : entity work.AxiLiteCrossbar
+   U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
          DEC_ERROR_RESP_G   => AXI_ERROR_RESP_G,
@@ -235,7 +241,7 @@ begin
    -------------------------------------------------
    -- Emulation of TX Data (Used for debugging only)
    -------------------------------------------------
-   U_EmuTx : entity work.BsaMpsMsgTxFramer
+   U_EmuTx : entity lcls2_llrf_bsa_mps_tx_core.BsaMpsMsgTxFramer
       generic map (
          TPD_G => TPD_G)
       port map (

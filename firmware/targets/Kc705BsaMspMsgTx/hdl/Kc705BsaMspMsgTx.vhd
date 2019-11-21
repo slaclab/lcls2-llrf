@@ -18,7 +18,10 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+
+library lcls2_llrf_bsa_mps_tx_core;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -119,7 +122,7 @@ begin
          I => refClk(0),
          O => usrClk);
 
-   U_RstSync0 : entity work.RstSync
+   U_RstSync0 : entity surf.RstSync
       generic map(
          TPD_G => TPD_G)
       port map (
@@ -140,7 +143,7 @@ begin
          I => refClk(1),
          O => stableClk);
 
-   U_RstSync1 : entity work.RstSync
+   U_RstSync1 : entity surf.RstSync
       generic map(
          TPD_G => TPD_G)
       port map (
@@ -148,7 +151,7 @@ begin
          asyncRst => extRst,
          syncRst  => stableRst);
 
-   U_Core : entity work.BsaMspMsgTxCore
+   U_Core : entity lcls2_llrf_bsa_mps_tx_core.BsaMspMsgTxCore
       generic map(
          TPD_G => TPD_G)
       port map (

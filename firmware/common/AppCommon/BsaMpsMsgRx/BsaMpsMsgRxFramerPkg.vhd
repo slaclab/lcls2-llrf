@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxFramerPkg.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2019-04-17
 -------------------------------------------------------------------------------
 -- Description: RX Data Framer Package File
 -------------------------------------------------------------------------------
@@ -18,7 +16,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
 
 package BsaMpsMsgRxFramerPkg is
 

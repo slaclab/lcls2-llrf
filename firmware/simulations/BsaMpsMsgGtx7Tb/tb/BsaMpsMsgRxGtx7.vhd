@@ -1,8 +1,6 @@
 -------------------------------------------------------------------------------
 -- File       : BsaMpsMsgRxGtx7.vhd
 -- Company    : SLAC National Accelerator Laboratory
--- Created    : 2017-03-13
--- Last update: 2017-04-04
 -------------------------------------------------------------------------------
 -- Description: GTX7 Wrapper
 -------------------------------------------------------------------------------
@@ -20,7 +18,8 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.StdRtlPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
 
 library UNISIM;
 use UNISIM.VCOMPONENTS.all;
@@ -98,7 +97,7 @@ begin
    -- Watchdog State Machine
    -------------------------
    wdtReset <= (not(dataValid) and linkUp) or wdtRstOneShot;
-   U_PwrUpRst : entity work.PwrUpRst
+   U_PwrUpRst : entity surf.PwrUpRst
       generic map(
          TPD_G      => TPD_G,
          DURATION_G => DURATION_100MS_C)
@@ -107,7 +106,7 @@ begin
          clk    => rxClk,
          rstOut => wdtRst);
 
-   U_WatchDogRst : entity work.WatchDogRst
+   U_WatchDogRst : entity surf.WatchDogRst
       generic map(
          TPD_G      => TPD_G,
          DURATION_G => DURATION_1S_C)
@@ -119,7 +118,7 @@ begin
    -------------------------
    -- Watchdog State Machine
    -------------------------   
-   Gtx7Core_Inst : entity work.Gtx7Core
+   Gtx7Core_Inst : entity surf.Gtx7Core
       generic map (
          -- SIM Generics
          TPD_G                    => TPD_G,

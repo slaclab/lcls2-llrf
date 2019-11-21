@@ -19,13 +19,18 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.StdRtlPkg.all;
-use work.AxiStreamPkg.all;
-use work.SsiPkg.all;
-use work.AxiLitePkg.all;
-use work.TimingPkg.all;
-use work.AmcCarrierPkg.all;
-use work.AppTopPkg.all;
+library surf;
+use surf.StdRtlPkg.all;
+use surf.AxiStreamPkg.all;
+use surf.AxiLitePkg.all;
+use surf.SsiPkg.all;
+
+library amc_carrier_core;
+use amc_carrier_core.AmcCarrierPkg.all;
+use amc_carrier_core.AppTopPkg.all;
+
+library lcls_timing_core;
+use lcls_timing_core.TimingPkg.all;
 
 entity AmcCarrierLlrfBsaMpsMsgRx is
    generic (
@@ -236,7 +241,7 @@ begin
          gtTxP                => gtTxP,
          gtTxN                => gtTxN);
 
-   U_Core : entity work.AmcCarrierCoreBase
+   U_Core : entity amc_carrier_core.AmcCarrierCoreBase
       generic map (
          TPD_G        => TPD_G,
          BUILD_INFO_G => BUILD_INFO_G,
