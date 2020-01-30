@@ -1,6 +1,12 @@
 # lcls2-llrf
 LCLS-II HPS LLRF MPS/BSA Receiver firmware. 
 
+<!--- ########################################################################################### -->
+
+# Documentation
+
+* [Presentation on concept](https://docs.google.com/presentation/d/1OO4wDKnGrOmJdl8fZVZN3Vd6vPXTcOh2kO_sZSfTc9E/edit?usp=sharing)
+* [MPS/BSA Data Format and Encoding](https://docs.google.com/spreadsheets/d/1yAnKjZJzbtwTWP5RI_DyvOzQI-og5RyX4Gxj4QaJGGg/edit?usp=sharing)
 
 <!--- ########################################################################################### -->
 
