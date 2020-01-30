@@ -1,6 +1,42 @@
 # lcls2-llrf
 LCLS-II HPS LLRF MPS/BSA Receiver firmware. 
 
+
+<!--- ########################################################################################### -->
+
+# AMC Carrier Hardware Configuration
+
+* Carrier: 
+    * [PC-379-396-01-C06](https://confluence.slac.stanford.edu/display/AIRTRACK/PC_379_396_01_C06) (or newer) 
+    * BOM Configuration A00
+    * Installed in ATCA slot# 3
+* AMC.BAY[0]: 
+    * [PC-379-396-09-C02](https://confluence.slac.stanford.edu/display/AIRTRACK/PC_379_396_09_C02): (or newer)
+    * SFP[0] = LLRF Fiber[0]    
+    * SFP[1] = LLRF Fiber[1]    
+    * SFP[7:2] = Empty     
+* AMC.BAY[1]: 
+    * Empty with AMC filler installed
+* RTM: 
+    * Empty with RTM filler installed
+    
+ ```   
+ View from the TOP
+|---------------------------||-------------|
+|-------------|             ||             | 
+|             |             ||   RTM       |
+|    BAY[1]   |             ||-----|       |
+|             |             |      |       |
+|-------------| AMC Carrier |      |       |
+|-------------|             |      |       |
+|             |             |      |       |
+|    BAY[0]   |             |      |       |
+|             |             |      |       |
+|-------------|             |      |       |
+|---------------------------|      |-------|
+```
+
+
 <!--- ########################################################################################### -->
 
 # Before you clone the GIT repository
