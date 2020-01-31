@@ -29,7 +29,7 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
     * Install RTM filler card
     
  ```   
- View from the TOP
+                                  View from the TOP
              |---------------------------||-------------|
              |-------------|             ||             | 
              |             |             ||   RTM       |
