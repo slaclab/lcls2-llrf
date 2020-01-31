@@ -68,13 +68,83 @@ $ ./ProgramFPGA.bash \
    --user laci \
    --mcs /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000001-20200130143821-ruckman-343b730.mcs
    
-# Check the IPMI status
+# Check new FW loaded
 $ source /afs/slac/g/reseng/IPMC/env.sh
 $ amcc_dump_bsi --all shm-b15-rf02/3
+================================================================================
+| BSI: shm-b15-rf02/3/CEN (shm-b15-rf02/3/4)                                   |
+BSI Ld  State:  3          (READY)
+BSI Ld Status: 0x00000000  (SUCCESS)
+  BSI Version: 0x0103 = 1.3
+        MAC 0: 08:00:56:00:4e:65
+        MAC 1: 08:00:56:00:4e:66
+        MAC 2: 08:00:56:00:4e:67
+        MAC 3: 08:00:56:00:4e:68
+   DDR status: 0x0003: MemErr: F, MemRdy: T, Eth Link: Up
+  Enet uptime:       0070 seconds
+  FPGA uptime:       0071 seconds
+ FPGA version: 0x00000001
+ BL start adx: 0x04000000
+     Crate ID: 0x0001
+    ATCA slot: 3
+   AMC 0 info: Aux: 01 Ser: 4200000118f89170 Type: 05 Ver: C02 BOM: 00 Tag: 28
+     GIT hash: 343b730ff7e37deb8bb88bd3a77bc92cc38f457d
+FW bld string: 'AmcCarrierLlrfBsaMpsMsgRx: Vivado v2019.2, rdsrv307 (x86_64), Built Thu 30 Jan 2020 02:38:21 PM PST by ruckman'
+--------------------------------------------------------------------------------
 ```
 
+<!--- ########################################################################################### -->
 
+# How to run CPSW with YAML + QT GUI
 
+Instructions based on [this confluence page](https://confluence.slac.stanford.edu/x/_b-PD)
+
+```bash
+# In the first SSH terminal, start the server using the start_control_server.sh script
+$ ssh lcls-dev3 -Y
+$ ssh laci@cpu-b15-rf02 -Y
+$ cd /afs/slac/g/lcls/package/cpsw/controlGUI/current
+$ ./start_control_server.sh \
+   -a 10.0.1.103 \
+   -t /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000001-20200130143821-ruckman-343b730.cpsw.tar.gz
+   
+         CONNECTED to 10.0.1.103:8193
+         CONNECTED to 10.0.1.103:8193
+         Starting up 'UDP RX Handler (UDP protocol module)'
+         Starting up 'RSSI Thread'
+         C SYN received, good checksum (state CLNT_WAIT_SYN_ACK)
+         Starting up ''Depacketizer' protocol module'
+         Starting up 'TDEST VC Demux'
+         Starting up 'SRP VC Demux'
+         CONNECTED to 10.0.1.103:8194
+         CONNECTED to 10.0.1.103:8194
+         CONNECTED to 10.0.1.103:8194
+         Starting up 'UDP RX Handler (UDP protocol module)'
+         Starting up 'UDP RX Handler (UDP protocol module)'
+         Starting up 'RSSI Thread'
+         C SYN received, good checksum (state CLNT_WAIT_SYN_ACK)
+         Starting up ''Depacketizer' protocol module'
+         Starting up 'TDEST VC Demux'
+         Starting up 'Stream0'
+         Starting up 'Stream1'
+         Starting up 'Stream2'
+         Starting up 'Stream3'
+         Starting up 'Stream4'
+         Starting up 'Stream5'
+         Starting up 'Stream6'
+         Starting up 'Stream7'
+         Control id = 1
+         Starting server at port 8090
+```
+
+Note that the server mapped to port 8090`
+
+```bash
+# In the Second SSH terminal, start the server using the start_control_server.sh script
+$ ssh lcls-dev3 -Y   
+$ cd /afs/slac/g/lcls/package/cpsw/controlGUI/current
+$ ./start_gui.sh cpu-b15-rf02 8090
+```
 
 
 <!--- ########################################################################################### -->
