@@ -150,11 +150,11 @@ $ ./start_gui.sh cpu-b15-rf02 8090
 
 # Example Screenshots
 
-* Default Configuration
-* Standalone Testing Configuration
+* [Default Configuration](https://github.com/slaclab/lcls2-llrf/blob/master/screenshots/DefaultConfig.png)
+* [Standalone Testing Configuration](https://github.com/slaclab/lcls2-llrf/blob/master/screenshots/StandAloneLoopbackModeConfig.png)
    * Emulates the LLRF MPS/BSA link
    * Useful for FW/SW development without LLRF links connected
-* Standalone Status Registers Example
+* [Standalone Status Registers Example](https://github.com/slaclab/lcls2-llrf/blob/master/screenshots/StandAloneLoopbackMode.png)
 
 
 
