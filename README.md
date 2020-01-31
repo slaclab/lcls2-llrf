@@ -67,9 +67,12 @@ $ ./ProgramFPGA.bash \
    --cpu cpu-b15-rf02 \
    --user laci \
    --mcs /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000001-20200130143821-ruckman-343b730.mcs
+   
+# Check the IPMI status
+$ source /afs/slac/g/reseng/IPMC/env.sh
+$ amcc_dump_bsi --all shm-b15-rf02/3
+```
 
-
-/afs/slac/g/lcls/package/cpsw/utils/ProgramFPGA/current/ProgramFPGA.bash --shelfmanager shm-b084-sp07 --slot 4 --addr 3 --mcs ~ruckman/projects/lcls/cryo-det/firmware/targets/CryoRtmEth/images/CryoRtmEth-0x00000013-20170720163850-ruckman-3fc2f4b.mcs
 
 
 
