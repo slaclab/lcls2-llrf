@@ -146,8 +146,17 @@ $ cd /afs/slac/g/lcls/package/cpsw/controlGUI/current
 $ ./start_gui.sh cpu-b15-rf02 8090
 ```
 
+<!--- ########################################################################################### -->
 
-[logo]: https://github.com/slaclab/lcls2-llrf/blob/master/StandAloneLoopbackMode.png "Logo Title Text 2"
+# Example Screenshots
+
+* Default Configuration
+* Standalone Testing Configuration
+   * Emulates the LLRF MPS/BSA link
+   * Useful for FW/SW development without LLRF links connected
+* Standalone Status Registers Example
+
+
 
 <!--- ########################################################################################### -->
 
