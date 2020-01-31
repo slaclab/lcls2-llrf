@@ -53,7 +53,7 @@ fiber[0]    |    BAY[0]   |             |      |       |
 * shelf manager: shm-b15-rf02
 * cpu: cpu-b15-rf02 (tunneled from lcls-dev3)
 
-```
+```bash
 # SSH into  lcls-dev3 
 $ ssh lcls-dev3 -Y
 
@@ -92,20 +92,20 @@ $ amcc_dump_bsi --all shm-b15-rf02/3
 
 4) Setup for large filesystems on github
 
-```
+```bash
 $ git lfs install
 ```
 
 5) Verify that you have git version 2.13.0 (or later) installed 
 
-```
+```bash
 $ git version
 git version 2.13.0
 ```
 
 6) Verify that you have git-lfs version 2.1.1 (or later) installed 
 
-```
+```bash
 $ git-lfs version
 git-lfs/2.1.1
 ```
@@ -114,7 +114,7 @@ git-lfs/2.1.1
 
 # Clone the GIT repository
 
-```
+```bash
 $ git clone --recursive git@github.com:slaclab/lcls2-llrf
 ```
 
@@ -126,18 +126,18 @@ $ git clone --recursive git@github.com:slaclab/lcls2-llrf
 
 > If you are on the SLAC network, here's how to setup the Xilinx licensing
 
-```
+```bash
 $ source atlas-rd53-fmc-dev/firmware/setup_env_slac.sh
 ```
 
 2) Go to the target directory and make the firmware:
-```
+```bash
 $ cd lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx
 $ make
 ```
 
 3) Optional: Review the results in GUI mode
-```
+```bash
 $ make gui
 ```
 
