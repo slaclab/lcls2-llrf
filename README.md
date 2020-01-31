@@ -147,6 +147,8 @@ $ ./start_gui.sh cpu-b15-rf02 8090
 ```
 
 
+[logo]: https://github.com/slaclab/lcls2-llrf/blob/master/StandAloneLoopbackMode.png "Logo Title Text 2"
+
 <!--- ########################################################################################### -->
 
 # Before you clone the GIT repository
