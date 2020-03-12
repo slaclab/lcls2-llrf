@@ -119,9 +119,10 @@ architecture mapping of Application is
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
 
-   signal remoteRd    : slv(1 downto 0);
-   signal remoteValid : slv(1 downto 0);
-   signal remoteMsg   : MsgArray(1 downto 0);
+   signal remoteRd     : slv(1 downto 0);
+   signal remoteLinkUp : slv(1 downto 0);
+   signal remoteValid  : slv(1 downto 0);
+   signal remoteMsg    : MsgArray(1 downto 0);
 
    signal txData  : slv(15 downto 0);
    signal txDataK : slv(1 downto 0);
@@ -220,6 +221,7 @@ begin
             axilWriteSlave  => axilWriteSlaves(i),
             -- RX Frame Interface (axilClk domain)     
             remoteRd        => remoteRd(i),
+            remoteLinkUp    => remoteLinkUp(i),
             remoteValid     => remoteValid(i),
             remoteMsg       => remoteMsg(i),
             -- Emulation TX Data Interface (txClk domain)
@@ -278,6 +280,7 @@ begin
          axilWriteSlave  => axilWriteSlaves(COMBINE_INDEX_C),
          -- RX Frame Interface
          remoteRd        => remoteRd,
+         remoteLinkUp    => remoteLinkUp,
          remoteValid     => remoteValid,
          remoteMsg       => remoteMsg,
          -- Timing Interface

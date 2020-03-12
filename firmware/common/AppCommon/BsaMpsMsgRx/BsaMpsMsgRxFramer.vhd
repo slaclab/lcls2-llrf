@@ -63,6 +63,7 @@ entity BsaMpsMsgRxFramer is
       gtRst           : out sl;
       -- RX Frame Interface (axilClk domain)     
       remoteRd        : in  sl;
+      remoteLinkUp    : out sl;
       remoteValid     : out sl;
       remoteMsg       : out MsgType);
 end BsaMpsMsgRxFramer;
@@ -388,10 +389,10 @@ begin
    U_Fifo : entity surf.FifoAsync
       generic map (
          TPD_G         => TPD_G,
-         MEMORY_TYPE_G => "distributed",
+         MEMORY_TYPE_G => "block",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => RX_MSG_FIFO_WIDTH_C,
-         ADDR_WIDTH_G  => 5)
+         ADDR_WIDTH_G  => 9)
       port map (
          rst      => rxRst,
          -- Write Ports
@@ -406,6 +407,15 @@ begin
          valid    => remoteValid);
 
    remoteMsg <= fromSlv(fifoDout);
+
+   U_SyncOutVec : entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 1)
+      port map (
+         clk        => axilClk,
+         dataIn(0)  => rxValid,
+         dataOut(0) => remoteLinkUp);
 
    -----------------------
    -- Configuration/Status

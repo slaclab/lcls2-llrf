@@ -118,55 +118,55 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       sizeBits: 1
       description: RxLinkUp Status Bit
     #########################################################
-    RxDecErr:
-      at:
-        offset: 0x400
-      class: IntField
-      name: RxDecErr
-      mode: RO
-      lsBit: 1
-      sizeBits: 2
-      description: RxDecErr Status Bits 
+#    RxDecErr:
+#      at:
+#        offset: 0x400
+#      class: IntField
+#      name: RxDecErr
+#      mode: RO
+#      lsBit: 1
+#      sizeBits: 2
+#      description: RxDecErr Status Bits 
     #########################################################
-    RxDispErr:
-      at:
-        offset: 0x400
-      class: IntField
-      name: RxDispErr
-      mode: RO
-      lsBit: 3
-      sizeBits: 2
-      description: RxDispErr Status Bits
+#    RxDispErr:
+#      at:
+#        offset: 0x400
+#      class: IntField
+#      name: RxDispErr
+#      mode: RO
+#      lsBit: 3
+#      sizeBits: 2
+#      description: RxDispErr Status Bits
     #########################################################
-    Overflow:
-      at:
-        offset: 0x400
-      class: IntField
-      name: Overflow
-      mode: RO
-      lsBit: 5
-      sizeBits: 1
-      description: Overflow Status Bit 
+#    Overflow:
+#      at:
+#        offset: 0x400
+#      class: IntField
+#      name: Overflow
+#      mode: RO
+#      lsBit: 5
+#      sizeBits: 1
+#      description: Overflow Status Bit 
     #########################################################
-    ErrPktLen:
-      at:
-        offset: 0x400
-      class: IntField
-      name: ErrPktLen
-      mode: RO
-      lsBit: 6
-      sizeBits: 1
-      description: ErrPktLen Status Bit
+#    ErrPktLen:
+#      at:
+#        offset: 0x400
+#      class: IntField
+#      name: ErrPktLen
+#      mode: RO
+#      lsBit: 6
+#      sizeBits: 1
+#      description: ErrPktLen Status Bit
     #########################################################
-    ErrCrc:
-      at:
-        offset: 0x400
-      class: IntField
-      name: ErrCrc
-      mode: RO
-      lsBit: 7
-      sizeBits: 1
-      description: ErrCrc Status Bit     
+#    ErrCrc:
+#      at:
+#        offset: 0x400
+#      class: IntField
+#      name: ErrCrc
+#      mode: RO
+#      lsBit: 7
+#      sizeBits: 1
+#      description: ErrCrc Status Bit     
     #########################################################
     CPllLock:
       at:
@@ -178,15 +178,15 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       sizeBits: 1
       description: CPllLock Status Bit   
     #########################################################
-    GtRxFifoErr:
-      at:
-        offset: 0x401
-      class: IntField
-      name: GtRxFifoErr
-      mode: RO
-      lsBit: 1
-      sizeBits: 1
-      description: GtRxFifoErr Status Bit
+#    GtRxFifoErr:
+#      at:
+#        offset: 0x401
+#      class: IntField
+#      name: GtRxFifoErr
+#      mode: RO
+#      lsBit: 1
+#      sizeBits: 1
+#      description: GtRxFifoErr Status Bit
     #########################################################
     PacketRate:
       at:

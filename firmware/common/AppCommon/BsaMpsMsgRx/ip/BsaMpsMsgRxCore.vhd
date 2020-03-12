@@ -49,6 +49,7 @@ entity BsaMpsMsgRxCore is
       axilWriteSlave  : out AxiLiteWriteSlaveType;
       -- RX Frame Interface (axilClk domain)     
       remoteRd        : in  sl;
+      remoteLinkUp    : out sl;
       remoteValid     : out sl;
       remoteMsg       : out MsgType;
       -- EMU TX Data Interface (txClk domain)
@@ -144,6 +145,7 @@ begin
          gtRst           => gtRst,
          -- RX Frame Interface (axilClk domain)     
          remoteRd        => remoteRd,
+         remoteLinkUp    => remoteLinkUp,
          remoteValid     => remoteValid,
          remoteMsg       => remoteMsg);
 

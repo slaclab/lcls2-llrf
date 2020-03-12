@@ -49,6 +49,7 @@ entity BsaMpsMsgRxCombine is
       axilWriteSlave  : out AxiLiteWriteSlaveType;
       -- RX Frame Interface 
       remoteRd        : out slv(1 downto 0);
+      remoteLinkUp    : in  slv(1 downto 0);
       remoteValid     : in  slv(1 downto 0);
       remoteMsg       : in  MsgArray(1 downto 0);
       -- Timing Interface
@@ -119,8 +120,8 @@ begin
          MEMORY_TYPE_G => "distributed",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => TIMING_MESSAGE_BITS_C,
-         ADDR_WIDTH_G  => 4,             -- 2^4 = 16 samples
-         FULL_THRES_G  => 8)             -- 8 sample threshold
+         ADDR_WIDTH_G  => 5,            -- 2^5 = 32 samples
+         FULL_THRES_G  => 16)           -- 16 sample threshold
       port map (
          rst       => axilRst,
          clk       => axilClk,
@@ -136,8 +137,8 @@ begin
    timingMessage <= toTimingMessageType(fifoDout);
 
    comb : process (axilReadMaster, axilRst, axilWriteMaster, fifoValid,
-                   packetRate, progFull, r, remoteMsg, remoteValid,
-                   timingMessage) is
+                   packetRate, progFull, r, remoteLinkUp, remoteMsg,
+                   remoteValid, timingMessage) is
       variable v           : RegType;
       variable axilEp      : AxiLiteEndPointType;
       variable busy        : sl;
@@ -166,8 +167,8 @@ begin
             -- Check if local FIFO has data and not busy
             if (fifoValid = '1') and (busy = '0') then
 
-               -- Check the local FIFO threshold 
-               if (progFull = '1') then
+               -- Check the local FIFO threshold or no links
+               if (progFull = '1') or (remoteLinkUp = "00") then
                   -- Next state
                   v.state := CHECK_ALIGN_S;
 
@@ -180,57 +181,87 @@ begin
             end if;
          ----------------------------------------------------------------------
          when CHECK_ALIGN_S =>
+            -- Default Next state
+            v.state := IDLE_S;
+
             -- Loop through the remote channels
             for i in 1 downto 0 loop
 
-               -- Check if behind in time with respect to local FIFO
-               if (remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1') then
+               -- Check if behind in time with respect to local FIFO or no link
+               if ((remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1')) or (remoteLinkUp(i) = '0') then
                   -- Blow off data
                   v.remoteRd(i) := '1';
-               end if;
+               else
 
-               -- Check if aligned with respect to local FIFO
-               if (remoteMsg(i).timeStamp = timingMessage.timeStamp) and (remoteValid(i) = '1') then
-                  -- Set the flags
-                  v.aligned(i) := '1';
-                  v.sevr(i)    := "00";
-               end if;
+                  -- Check if aligned with respect to local FIFO
+                  if (remoteMsg(i).timeStamp = timingMessage.timeStamp) and (remoteValid(i) = '1') then
+                     -- Set the flags
+                     v.aligned(i) := '1';
+                     v.sevr(i)    := "00";
+                  end if;
 
-               -- Check if ahead in time with respect to local FIFO
-               if (remoteMsg(i).timeStamp > timingMessage.timeStamp) and (remoteValid(i) = '1') then
-                  -- Set the flag
-                  remoteAhead(i) := '1';
+                  -- Check if ahead in time with respect to local FIFO
+                  if (remoteMsg(i).timeStamp > timingMessage.timeStamp) and (remoteValid(i) = '1') then
+                     -- Set the flag
+                     remoteAhead(i) := '1';
+                  end if;
+
                end if;
 
             end loop;
 
-            -- Check if both remote channels are aligned to local channel
-            if (v.aligned = "11") then
+            if (progFull = '1') or (remoteLinkUp = "00") then
                -- Next state
                v.state := SEND_MSG_S;
 
-            -- Check if both remote channels are ahead of time
-            elsif (remoteAhead = "11") then
-               -- Next state
-               v.state := SEND_MSG_S;
+            -- Check for both links up
+            elsif (remoteLinkUp = "11") then
 
-            -- Check if link0 aligned but link1 ahead
-            elsif (v.aligned = "01") and (remoteAhead = "10") then
-               -- Next state
-               v.state := SEND_MSG_S;
+               -- Check if both remote channels are aligned to local channel
+               if (v.aligned = "11") then
+                  -- Next state
+                  v.state := SEND_MSG_S;
 
-            -- Check if link1 aligned but link0 ahead
-            elsif (v.aligned = "10") and (remoteAhead = "01") then
-               -- Next state
-               v.state := SEND_MSG_S;
+               -- Check if both remote channels are ahead of time
+               elsif (remoteAhead = "11") then
+                  -- Next state
+                  v.state := SEND_MSG_S;
 
-            elsif (progFull = '1') then
-               -- Next state
-               v.state := SEND_MSG_S;
+               -- Check if link0 aligned but link1 ahead
+               elsif (v.aligned = "01") and (remoteAhead = "10") then
+                  -- Next state
+                  v.state := SEND_MSG_S;
 
+               -- Check if link1 aligned but link0 ahead
+               elsif (v.aligned = "10") and (remoteAhead = "01") then
+                  -- Next state
+                  v.state := SEND_MSG_S;
+               end if;
+
+            -- Else check for individual links
             else
-               -- Next state
-               v.state := IDLE_S;
+
+               -- Loop through the remote channels
+               for i in 1 downto 0 loop
+
+                  -- Check if link up
+                  if (remoteLinkUp(i) = '1') then
+
+                     -- Check if both remote channels are aligned to local channel
+                     if (v.aligned(i) = '1') then
+                        -- Next state
+                        v.state := SEND_MSG_S;
+
+                     -- Check if both remote channels are ahead of time
+                     elsif (remoteAhead(i) = '1') then
+                        -- Next state
+                        v.state := SEND_MSG_S;
+                     end if;
+
+                  end if;
+
+               end loop;
+
             end if;
          ----------------------------------------------------------------------
          when SEND_MSG_S =>
@@ -254,7 +285,7 @@ begin
 
             -- Link 0
             v.diagnosticBus.sevr(30) := r.sevr(0);
-            if r.sevr(0) = "00" then
+            if (r.sevr(0) = "00") then
                v.diagnosticBus.data(30) := x"0000_000" & remoteMsg(0).mpsPermit;
             else
                v.diagnosticBus.data(30) := x"0000_0000";
@@ -262,7 +293,7 @@ begin
 
             -- Link 1
             v.diagnosticBus.sevr(31) := r.sevr(1);
-            if r.sevr(1) = "00" then
+            if (r.sevr(1) = "00") then
                v.diagnosticBus.data(31) := x"0000_000" & remoteMsg(1).mpsPermit;
             else
                v.diagnosticBus.data(31) := x"0000_0000";
@@ -315,7 +346,8 @@ begin
 
       -- Outputs
       fifoRd         <= r.fifoRd;
-      remoteRd       <= r.remoteRd;
+      remoteRd(0)    <= r.remoteRd(0);
+      remoteRd(1)    <= r.remoteRd(1);
       diagnosticBus  <= r.diagnosticBus;
       axilWriteSlave <= r.axilWriteSlave;
       axilReadSlave  <= r.axilReadSlave;
