@@ -66,7 +66,7 @@ $ ./ProgramFPGA.bash \
    --slot 3 \
    --cpu cpu-b15-rf02 \
    --user laci \
-   --mcs /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000001-20200130143821-ruckman-343b730.mcs
+   --mcs /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000002-20200312090021-ruckman-9809cca.mcs
    
 # Check new FW loaded
 $ source /afs/slac/g/reseng/IPMC/env.sh
@@ -81,15 +81,15 @@ BSI Ld Status: 0x00000000  (SUCCESS)
         MAC 2: 08:00:56:00:4e:67
         MAC 3: 08:00:56:00:4e:68
    DDR status: 0x0003: MemErr: F, MemRdy: T, Eth Link: Up
-  Enet uptime:       0070 seconds
-  FPGA uptime:       0071 seconds
- FPGA version: 0x00000001
+  Enet uptime:         76 seconds
+  FPGA uptime:         77 seconds
+ FPGA version: 0x00000002
  BL start adx: 0x04000000
      Crate ID: 0x0001
     ATCA slot: 3
    AMC 0 info: Aux: 01 Ser: 4200000118f89170 Type: 05 Ver: C02 BOM: 00 Tag: 28
-     GIT hash: 343b730ff7e37deb8bb88bd3a77bc92cc38f457d
-FW bld string: 'AmcCarrierLlrfBsaMpsMsgRx: Vivado v2019.2, rdsrv307 (x86_64), Built Thu 30 Jan 2020 02:38:21 PM PST by ruckman'
+     GIT hash: 9809ccaa91d0aa0beaa0f9201746f795be6adaf6
+FW bld string: 'AmcCarrierLlrfBsaMpsMsgRx: Vivado v2019.2, rdsrv307 (x86_64), Built Thu 12 Mar 2020 09:00:21 AM PDT by ruckman'
 --------------------------------------------------------------------------------
 ```
 
@@ -106,7 +106,7 @@ $ ssh laci@cpu-b15-rf02 -Y
 $ cd /afs/slac/g/lcls/package/cpsw/controlGUI/current
 $ ./start_control_server.sh \
    -a 10.0.1.103 \
-   -t /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000001-20200130143821-ruckman-343b730.cpsw.tar.gz
+   -t /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000002-20200312090021-ruckman-9809cca.cpsw.tar.gz
    
          CONNECTED to 10.0.1.103:8193
          CONNECTED to 10.0.1.103:8193
