@@ -243,9 +243,10 @@ begin
 
    U_Core : entity amc_carrier_core.AmcCarrierCoreBase
       generic map (
-         TPD_G        => TPD_G,
-         BUILD_INFO_G => BUILD_INFO_G,
-         APP_TYPE_G   => APP_LLRF_TYPE_C)  -- Configured by application (refer to AmcCarrierPkg for list of all application types
+         TPD_G         => TPD_G,
+         BUILD_INFO_G  => BUILD_INFO_G,
+         CLKSEL_MODE_G => "LCLSII",     -- Always only LCLS-II timing
+         APP_TYPE_G    => APP_LLRF_TYPE_C)  -- Configured by application (refer to AmcCarrierPkg for list of all application types
       port map (
          ----------------------
          -- Top Level Interface
