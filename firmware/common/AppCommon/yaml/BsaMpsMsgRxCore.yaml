@@ -186,7 +186,25 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       mode: RO
       lsBit: 1
       sizeBits: 1
-      description: GtRxFifoErr Status Bit  
+      description: GtRxFifoErr Status Bit
+    #########################################################
+    PacketRate:
+      at:
+        offset: 0x410
+      class: IntField
+      name: PacketRate
+      mode: RO
+      sizeBits: 32
+      description: Packet Rate (units of Hz)      
+    #########################################################  
+    SofRate:
+      at:
+        offset: 0x414
+      class: IntField
+      name: SofRate
+      mode: RO
+      sizeBits: 32
+      description: Start-Of-Frame Rate (units of Hz)      
     #########################################################
     UserValue:
       at:
