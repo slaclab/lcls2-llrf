@@ -71,6 +71,7 @@ architecture rtl of BsaMpsMsgRxCombine is
       fifoRd         : sl;
       aligned        : slv(1 downto 0);
       sevr           : Slv2Array(1 downto 0);
+      timeStampDebug : Slv64Array(2 downto 0);
       remoteRd       : slv(1 downto 0);
       diagnosticBus  : DiagnosticBusType;
       axilReadSlave  : AxiLiteReadSlaveType;
@@ -80,10 +81,11 @@ architecture rtl of BsaMpsMsgRxCombine is
 
    constant REG_INIT_C : RegType := (
       cntRst         => '0',
-      dropCnt        => (others => x"0000_0000"),
+      dropCnt        => (others => (others => '0')),
       fifoRd         => '0',
       aligned        => (others => '0'),
       sevr           => (others => "11"),
+      timeStampDebug => (others => (others => '0')),
       remoteRd       => (others => '0'),
       diagnosticBus  => DIAGNOSTIC_BUS_INIT_C,
       axilReadSlave  => AXI_LITE_READ_SLAVE_INIT_C,
@@ -120,8 +122,8 @@ begin
          MEMORY_TYPE_G => "distributed",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => TIMING_MESSAGE_BITS_C,
-         ADDR_WIDTH_G  => 5,            -- 2^5 = 32 samples
-         FULL_THRES_G  => 16)           -- 16 sample threshold
+         ADDR_WIDTH_G  => 4,            -- 2^4 = 16 samples
+         FULL_THRES_G  => 8)            -- 8 sample threshold
       port map (
          rst       => axilRst,
          clk       => axilClk,
@@ -208,7 +210,15 @@ begin
 
                end if;
 
+               -- Keep a copy for debugging
+               if (remoteValid(i) = '1') then
+                  v.timeStampDebug(i) := remoteMsg(i).timeStamp;
+               end if;
+
             end loop;
+
+            -- Keep a copy for debugging
+            v.timeStampDebug(2) := timingMessage.timeStamp;
 
             if (progFull = '1') or (remoteLinkUp = "00") then
                -- Next state
@@ -321,9 +331,25 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
+      for i in 11 downto 0 loop
+         -- Link 0
+         axiSlaveRegisterR(axilEp, toSlv((0*64)+4*i, 12), 0, r.diagnosticBus.data(i+0));
+         axiSlaveRegisterR(axilEp, toSlv((1*64)+4*i, 12), 0, r.diagnosticBus.sevr(i+0));
+         -- Link 1
+         axiSlaveRegisterR(axilEp, toSlv((2*64)+4*i, 12), 0, r.diagnosticBus.data(i+12));
+         axiSlaveRegisterR(axilEp, toSlv((3*64)+4*i, 12), 0, r.diagnosticBus.sevr(i+12));
+      end loop;
+
       axiSlaveRegisterR(axilEp, x"700", 0, r.dropCnt(0));
       axiSlaveRegisterR(axilEp, x"704", 0, r.dropCnt(1));
       axiSlaveRegisterR(axilEp, x"708", 0, packetRate);
+
+      axiSlaveRegisterR(axilEp, x"710", 0, remoteMsg(0).mpsPermit);
+      axiSlaveRegisterR(axilEp, x"714", 0, remoteMsg(1).mpsPermit);
+
+      axiSlaveRegisterR(axilEp, x"800", 0, r.timeStampDebug(0));
+      axiSlaveRegisterR(axilEp, x"810", 0, r.timeStampDebug(1));
+      axiSlaveRegisterR(axilEp, x"820", 0, r.timeStampDebug(2));
 
       axiSlaveRegister(axilEp, x"FFC", 0, v.cntRst);
 

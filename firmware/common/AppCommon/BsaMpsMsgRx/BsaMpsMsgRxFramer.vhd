@@ -389,10 +389,10 @@ begin
    U_Fifo : entity surf.FifoAsync
       generic map (
          TPD_G         => TPD_G,
-         MEMORY_TYPE_G => "block",
+         MEMORY_TYPE_G => "distributed",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => RX_MSG_FIFO_WIDTH_C,
-         ADDR_WIDTH_G  => 9)
+         ADDR_WIDTH_G  => 4)
       port map (
          rst      => rxRst,
          -- Write Ports
