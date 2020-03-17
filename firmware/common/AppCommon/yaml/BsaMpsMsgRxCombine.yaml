@@ -95,7 +95,7 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
       class: IntField
       name: MpsPermit0
       mode: RO
-      sizeBits: 1
+      sizeBits: 4
       description: Remote[0] MpsPermit  
     #########################################################
     MpsPermit1:
@@ -104,7 +104,7 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
       class: IntField
       name: MpsPermit1
       mode: RO
-      sizeBits: 1
+      sizeBits: 4
       description: Remote[1] MpsPermit        
     #########################################################
     RemoteTimestamp0:
