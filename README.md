@@ -106,7 +106,7 @@ $ ssh laci@cpu-b15-rf02 -Y
 $ cd /afs/slac/g/lcls/package/cpsw/controlGUI/current
 $ ./start_control_server.sh \
    -a 10.0.1.103 \
-   -t /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000009-20200312184224-ruckman-22bcb2b.cpsw.tar.gz
+   -t /afs/slac.stanford.edu/u/re/ruckman/projects/lcls/lcls2-llrf/firmware/targets/AmcCarrierLlrfBsaMpsMsgRx/images/AmcCarrierLlrfBsaMpsMsgRx-0x00000009-20200317081729-ruckman-458c85a.cpsw.tar.gz
    
          CONNECTED to 10.0.1.103:8193
          CONNECTED to 10.0.1.103:8193
