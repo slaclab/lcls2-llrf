@@ -23,10 +23,8 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
     * SFP[1] = LLRF Fiber[1]    
     * SFP[7:2] = Empty     
 * AMC.BAY[1]: 
-    * Unused 
     * Install AMC filler card
 * RTM: 
-    * Unsued
     * Install RTM filler card
     
  ```   
