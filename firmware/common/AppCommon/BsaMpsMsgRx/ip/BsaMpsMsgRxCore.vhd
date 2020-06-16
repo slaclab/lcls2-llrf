@@ -5,11 +5,11 @@
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ entity BsaMpsMsgRxCore is
       axilReadSlave   : out AxiLiteReadSlaveType;
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
-      -- RX Frame Interface (axilClk domain)     
+      -- RX Frame Interface (axilClk domain)
       remoteRd        : in  sl;
       remoteLinkUp    : out sl;
       remoteValid     : out sl;
@@ -59,7 +59,7 @@ entity BsaMpsMsgRxCore is
       txDataK         : in  slv(1 downto 0)  := (others => '0');
       -- Remote LLRF BSA/MPS Ports
       rxClk           : in sl;
-      rxRst           : in sl;      
+      rxRst           : in sl;
       gtRefClk        : in  sl;
       gtRxP           : in  sl;
       gtRxN           : in  sl;
@@ -143,7 +143,7 @@ begin
          loopback        => loopback,
          cPllLock        => cPllLock,
          gtRst           => gtRst,
-         -- RX Frame Interface (axilClk domain)     
+         -- RX Frame Interface (axilClk domain)
          remoteRd        => remoteRd,
          remoteLinkUp    => remoteLinkUp,
          remoteValid     => remoteValid,

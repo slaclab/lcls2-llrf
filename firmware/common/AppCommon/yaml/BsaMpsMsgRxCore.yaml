@@ -1,10 +1,10 @@
 ##############################################################################
 ## This file is part of 'LCLS2 LLRF Firmware'.
-## It is subject to the license terms in the LICENSE.txt file found in the 
-## top-level directory of this distribution and at: 
-##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
-## No part of 'LCLS2 LLRF Firmware', including this file, 
-## may be copied, modified, propagated, or distributed except according to 
+## It is subject to the license terms in the LICENSE.txt file found in the
+## top-level directory of this distribution and at:
+##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+## No part of 'LCLS2 LLRF Firmware', including this file,
+## may be copied, modified, propagated, or distributed except according to
 ## the terms contained in the LICENSE.txt file.
 ##############################################################################
 #schemaversion 3.0.0
@@ -25,7 +25,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RxLinkUpCnt
       mode: RO
       sizeBits: 32
-      description: RxLinkUp Status Counter  
+      description: RxLinkUp Status Counter
     #########################################################
     RxDecErr0Cnt:
       at:
@@ -34,7 +34,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RxDecErr0Cnt
       mode: RO
       sizeBits: 32
-      description: RxDecErr0 Status Counter   
+      description: RxDecErr0 Status Counter
     #########################################################
     RxDecErr1Cnt:
       at:
@@ -43,7 +43,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RxDecErr1Cnt
       mode: RO
       sizeBits: 32
-      description: RxDecErr1 Status Counter   
+      description: RxDecErr1 Status Counter
     #########################################################
     RxDispErr0Cnt:
       at:
@@ -52,7 +52,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RxDispErr0Cnt
       mode: RO
       sizeBits: 32
-      description: RxDispErr0 Status Counter     
+      description: RxDispErr0 Status Counter
     #########################################################
     RxDispErr1Cnt:
       at:
@@ -61,7 +61,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RxDispErr1Cnt
       mode: RO
       sizeBits: 32
-      description: RxDispErr1 Status Counter           
+      description: RxDispErr1 Status Counter
     #########################################################
     OverflowCnt:
       at:
@@ -70,7 +70,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: OverflowCnt
       mode: RO
       sizeBits: 32
-      description: Overflow Status Counter 
+      description: Overflow Status Counter
     #########################################################
     ErrPktLenCnt:
       at:
@@ -79,7 +79,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: ErrPktLenCnt
       mode: RO
       sizeBits: 32
-      description: ErrPktLen Status Counter  
+      description: ErrPktLen Status Counter
     #########################################################
     ErrCrcCnt:
       at:
@@ -88,7 +88,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: ErrCrcCnt
       mode: RO
       sizeBits: 32
-      description: ErrCrc Status Counter     
+      description: ErrCrc Status Counter
     #########################################################
     CPllLockCnt:
       at:
@@ -97,7 +97,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: CPllLockCnt
       mode: RO
       sizeBits: 32
-      description: CPllLock Status Counter   
+      description: CPllLock Status Counter
     #########################################################
     GtRxFifoErrCnt:
       at:
@@ -106,7 +106,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: GtRxFifoErrCnt
       mode: RO
       sizeBits: 32
-      description: GtRxFifoErr Status Counter         
+      description: GtRxFifoErr Status Counter
     #########################################################
     RxLinkUp:
       at:
@@ -126,7 +126,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
 #      mode: RO
 #      lsBit: 1
 #      sizeBits: 2
-#      description: RxDecErr Status Bits 
+#      description: RxDecErr Status Bits
     #########################################################
 #    RxDispErr:
 #      at:
@@ -146,7 +146,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
 #      mode: RO
 #      lsBit: 5
 #      sizeBits: 1
-#      description: Overflow Status Bit 
+#      description: Overflow Status Bit
     #########################################################
 #    ErrPktLen:
 #      at:
@@ -166,7 +166,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
 #      mode: RO
 #      lsBit: 7
 #      sizeBits: 1
-#      description: ErrCrc Status Bit     
+#      description: ErrCrc Status Bit
     #########################################################
     CPllLock:
       at:
@@ -176,7 +176,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       mode: RO
       lsBit: 0
       sizeBits: 1
-      description: CPllLock Status Bit   
+      description: CPllLock Status Bit
     #########################################################
 #    GtRxFifoErr:
 #      at:
@@ -195,8 +195,8 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: PacketRate
       mode: RO
       sizeBits: 32
-      description: Packet Rate (units of Hz)      
-    #########################################################  
+      description: Packet Rate (units of Hz)
+    #########################################################
     SofRate:
       at:
         offset: 0x414
@@ -204,7 +204,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: SofRate
       mode: RO
       sizeBits: 32
-      description: Start-Of-Frame Rate (units of Hz)      
+      description: Start-Of-Frame Rate (units of Hz)
     #########################################################
     UserValue:
       at:
@@ -213,7 +213,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: UserValue
       mode: RO
       sizeBits: 128
-      description: Remote UserValue Status Counter        
+      description: Remote UserValue Status Counter
     #########################################################
     RxPolarity:
       at:
@@ -231,7 +231,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: TxPolarity
       mode: RW
       sizeBits: 1
-      description: GTH's TxPolarity  
+      description: GTH's TxPolarity
     #########################################################
     Loopback:
       at:
@@ -240,7 +240,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: Loopback
       mode: RW
       sizeBits: 1
-      description: GTH's Loopback   
+      description: GTH's Loopback
     #########################################################
     RollOverEn:
       at:
@@ -249,7 +249,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: RollOverEn
       mode: RW
       sizeBits: 10
-      description: Status counters' roll over enable bit mask        
+      description: Status counters' roll over enable bit mask
     #########################################################
     CntRst:
       at:
@@ -258,7 +258,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: CntRst
       mode: WO
       sizeBits: 1
-      description: Status Counter Reset   
+      description: Status Counter Reset
     #########################################################
     GtRst:
       at:
@@ -267,7 +267,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: GtRst
       mode: WO
       sizeBits: 1
-      description: GTH Reset     
+      description: GTH Reset
     #########################################################
     HardRst:
       at:
@@ -276,7 +276,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       name: HardRst
       mode: WO
       sizeBits: 1
-      description: Hard Reset           
+      description: Hard Reset
     #########################################################
     RstCnt:
       name: RstCnt
@@ -286,7 +286,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       description: Reset all the status counters
       sequence:
       - entry: CntRst
-        value: 0x1      
+        value: 0x1
     #########################################################
     RstGt:
       name: RstGt
@@ -307,5 +307,44 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       sequence:
       - entry: HardRst
         value: 0x1
-    #########################################################    
-    
+    #########################################################
+    BsaQuantity:
+      at:
+        offset: 0x800
+        stride: 4
+        nelms: 12
+      class: IntField
+      name: BsaQuantity
+      sizeBits: 32
+      mode: RO
+      description: BsaQuantity[11:0]
+    #########################################################
+    BsaSevr:
+      at:
+        offset: 0x840
+        stride: 4
+        nelms: 12
+      class: IntField
+      name: BsaSevr
+      sizeBits: 2
+      mode: RO
+      description: BsaSevr[11:0]
+    #########################################################
+    MpsPermit:
+      at:
+        offset: 0x900
+      class: IntField
+      name: MpsPermit
+      mode: RO
+      sizeBits: 4
+      description: Remote MpsPermit
+    #########################################################
+    RemoteTimestamp:
+      at:
+        offset: 0x910
+      class: IntField
+      name: RemoteTimestamp
+      mode: RO
+      sizeBits: 64
+      description: Remote Timestamp
+    #########################################################

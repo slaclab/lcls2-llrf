@@ -1,10 +1,10 @@
 ##############################################################################
 ## This file is part of 'LCLS2 LLRF Firmware'.
-## It is subject to the license terms in the LICENSE.txt file found in the 
-## top-level directory of this distribution and at: 
-##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
-## No part of 'LCLS2 LLRF Firmware', including this file, 
-## may be copied, modified, propagated, or distributed except according to 
+## It is subject to the license terms in the LICENSE.txt file found in the
+## top-level directory of this distribution and at:
+##    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+## No part of 'LCLS2 LLRF Firmware', including this file,
+## may be copied, modified, propagated, or distributed except according to
 ## the terms contained in the LICENSE.txt file.
 ##############################################################################
 #schemaversion 3.0.0
@@ -17,122 +17,68 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
   configPrio: 1
   size: 0x1000
   children:
-    #########################################################    
-    BsaQuantity0:
+    #########################################################
+    BsaData:
       at:
         offset: 0x000
         stride: 4
-        nelms: 12
+        nelms: 32
       class: IntField
-      name: BsaQuantity0
+      name: BsaData
       sizeBits: 32
       mode: RO
-      description: BsaQuantity[0][11:0]  
-    #########################################################    
-    BsaSevr0:
-      at:
-        offset: 0x040
-        stride: 4
-        nelms: 12
-      class: IntField
-      name: BsaSevr0
-      sizeBits: 2
-      mode: RO
-      description: BsaSevr[0][11:0] 
-    #########################################################    
-    BsaQuantity1:
+      description: BsaData[31:0]
+    #########################################################
+    BsaSevr:
       at:
         offset: 0x080
         stride: 4
-        nelms: 12
+        nelms: 32
       class: IntField
-      name: BsaQuantity1
-      sizeBits: 32
-      mode: RO
-      description: BsaQuantity[1][11:0]  
-    #########################################################    
-    BsaSevr1:
-      at:
-        offset: 0x0C0
-        stride: 4
-        nelms: 12
-      class: IntField
-      name: BsaSevr1
+      name: BsaSevr
       sizeBits: 2
       mode: RO
-      description: BsaSevr[1][11:0] 
+      description: BsaSevr[31:0]
     #########################################################
-    RemoteDrop0Cnt:
+    RemoteDropCnt:
       at:
-        offset: 0x700
+        offset: 0x100
+        stride: 16
+        nelms: 4
       class: IntField
-      name: RemoteDrop0Cnt
-      mode: RO
+      name: RemoteDropCnt
       sizeBits: 32
-      description: RemoteDrop0 Status Counter  
-    #########################################################
-    RemoteDrop1Cnt:
-      at:
-        offset: 0x704
-      class: IntField
-      name: RemoteDrop1Cnt
       mode: RO
-      sizeBits: 32
-      description: RemoteDrop1 Status Counter 
+      description: RemoteDropCnt[3:0]
     #########################################################
-    PacketRate:
+    RemoteTimestamp:
       at:
-        offset: 0x708
+        offset: 0x200
+        stride: 16
+        nelms: 4
       class: IntField
-      name: PacketRate
-      mode: RO
-      sizeBits: 32
-      description: Diagnostic Bus Update Rate (units of Hz)  
-    #########################################################
-    MpsPermit0:
-      at:
-        offset: 0x710
-      class: IntField
-      name: MpsPermit0
-      mode: RO
-      sizeBits: 4
-      description: Remote[0] MpsPermit  
-    #########################################################
-    MpsPermit1:
-      at:
-        offset: 0x714
-      class: IntField
-      name: MpsPermit1
-      mode: RO
-      sizeBits: 4
-      description: Remote[1] MpsPermit        
-    #########################################################
-    RemoteTimestamp0:
-      at:
-        offset: 0x800
-      class: IntField
-      name: RemoteTimestamp0
-      mode: RO
+      name: RemoteTimestamp
       sizeBits: 64
-      description: Remote[0] Timestamp
-    #########################################################
-    RemoteTimestamp1:
-      at:
-        offset: 0x810
-      class: IntField
-      name: RemoteTimestamp1
       mode: RO
-      sizeBits: 64
-      description: Remote[1] Timestamp   
+      description: RemoteTimestamp[3:0]
     #########################################################
     LocalTimestamp:
       at:
-        offset: 0x820
+        offset: 0x240
       class: IntField
       name: LocalTimestamp
       mode: RO
       sizeBits: 64
-      description: Local Timestamp
+      description: LocalTimestamp
+    #########################################################
+    PacketRate:
+      at:
+        offset: 0x300
+      class: IntField
+      name: PacketRate
+      mode: RO
+      sizeBits: 32
+      description: Diagnostic Bus Update Rate (units of Hz)
     #########################################################
     CntRst:
       at:
@@ -141,8 +87,8 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
       name: CntRst
       mode: WO
       sizeBits: 1
-      description: Status Counter Reset   
-    #########################################################    
+      description: Status Counter Reset
+    #########################################################
     RstCnt:
       name: RstCnt
       class: SequenceCommand
@@ -151,5 +97,5 @@ BsaMpsMsgRxCombine: &BsaMpsMsgRxCombine
       description: Reset all the status counters
       sequence:
       - entry: CntRst
-        value: 0x1      
+        value: 0x1
     #########################################################

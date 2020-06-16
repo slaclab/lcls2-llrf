@@ -5,11 +5,11 @@
 -- Description: RX Data Framer
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ entity BsaMpsMsgRxFramer is
       loopback        : out sl;
       cPllLock        : in  sl;
       gtRst           : out sl;
-      -- RX Frame Interface (axilClk domain)     
+      -- RX Frame Interface (axilClk domain)
       remoteRd        : in  sl;
       remoteLinkUp    : out sl;
       remoteValid     : out sl;
@@ -130,6 +130,9 @@ architecture rtl of BsaMpsMsgRxFramer is
    signal fifoDin   : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
    signal fifoDout  : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
 
+   signal linkUp        : sl;
+   signal remoteMsgCopy : MsgType := MSG_INIT_C;
+
 begin
 
    comb : process (crcResult, r, rxData, rxDecErr, rxDispErr, rxRst, rxValid,
@@ -161,7 +164,7 @@ begin
             v.cnt := 0;
             -- Check for start of packet and Version 1
             if (r.rxValid = '1') and (r.rxdataK = "01") and (r.rxData(7 downto 0) = K28_5_C) and (r.rxData(15 downto 8) = x"01") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid := '1';
                v.crcData  := r.rxData;
                -- Next state
@@ -171,7 +174,7 @@ begin
          when USER_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid                                   := '1';
                v.crcData                                    := r.rxData;
                -- Save the bus value
@@ -194,7 +197,7 @@ begin
          when TS_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid                                       := '1';
                v.crcData                                        := r.rxData;
                -- Save the bus value
@@ -217,7 +220,7 @@ begin
          when MPS_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid       := '1';
                v.crcData        := r.rxData;
                -- Save the bus value
@@ -238,7 +241,7 @@ begin
          when BSA_SEVR_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid        := '1';
                v.crcData         := r.rxData;
                -- Save the bus value
@@ -259,7 +262,7 @@ begin
          when BSA_DATA_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Forward the data to CRC 
+               -- Forward the data to CRC
                v.crcValid                                                := '1';
                v.crcData                                                 := r.rxData;
                -- Save the bus value
@@ -290,7 +293,7 @@ begin
          when CRC_LO_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Save the bus value         
+               -- Save the bus value
                v.crc(15 downto 0) := r.rxData;
                -- Next state
                v.state            := CRC_HI_S;
@@ -302,7 +305,7 @@ begin
          when CRC_HI_S =>
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
-               -- Save the bus value         
+               -- Save the bus value
                v.crc(31 downto 16) := r.rxData;
                -- Next state
                v.state             := LAST_S;
@@ -378,7 +381,7 @@ begin
       port map (
          crcClk       => rxClk,
          crcReset     => r.crcRst,
-         crcDataWidth => "001",         -- 2 bytes 
+         crcDataWidth => "001",         -- 2 bytes
          crcDataValid => r.crcValid,
          crcIn        => r.crcData,
          crcOut       => crcResult);
@@ -408,6 +411,17 @@ begin
 
    remoteMsg <= fromSlv(fifoDout);
 
+   process(axilClk)
+   begin
+      if rising_edge(axilClk) then
+         if linkUp = '0' then
+            remoteMsgCopy <= MSG_INIT_C after TPD_G;
+         else
+            remoteMsgCopy <= fromSlv(fifoDout) after TPD_G;
+         end if;
+      end if;
+   end process;
+
    U_SyncOutVec : entity surf.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
@@ -415,7 +429,9 @@ begin
       port map (
          clk        => axilClk,
          dataIn(0)  => rxValid,
-         dataOut(0) => remoteLinkUp);
+         dataOut(0) => linkUp);
+
+   remoteLinkUp <= linkUp;
 
    -----------------------
    -- Configuration/Status
@@ -445,6 +461,8 @@ begin
          sofDet          => r.sofDet,
          userValue       => r.userValue,
          gtRst           => gtRst,
+         -- Copy of the remote message (axilClk domain)
+         remoteMsg       => remoteMsgCopy,
          -- AXI-Lite Interface (axilClk domain)
          axilClk         => axilClk,
          axilRst         => axilRst,
