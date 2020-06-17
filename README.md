@@ -21,7 +21,9 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
     * [PC-379-396-09-C02](https://confluence.slac.stanford.edu/display/AIRTRACK/PC_379_396_09_C02): (or newer)
     * SFP[0] = LLRF Fiber[0]    
     * SFP[1] = LLRF Fiber[1]    
-    * SFP[7:2] = Empty     
+    * SFP[2] = LLRF Fiber[2]    
+    * SFP[3] = LLRF Fiber[3]        
+    * SFP[7:4] = Empty     
 * AMC.BAY[1]: 
     * Install AMC filler card
 * RTM: 
