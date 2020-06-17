@@ -35,12 +35,17 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
              |    BAY[1]   |             ||-----|       |
              |             |             |      |       |
              |-------------| AMC Carrier |      |       |
-fiber[1]    |-------------|             |      |       |
+fiber[3]    |-------------|             |      |       |
+------------|SFP[3]       |             |      |       |
+fiber[2]    |             |             |      |       |
+------------|SFP[2]       |             |      |       |
+fiber[1]    |     BAY[0]  |             |      |       |
 ------------|SFP[1]       |             |      |       |
-fiber[0]    |    BAY[0]   |             |      |       |
+fiber[0]    |             |             |      |       |
 ------------|SFP[0]       |             |      |       |
              |-------------|             |      |       |
              |---------------------------|      |-------|
+              
 ```
 Note: 1 fiber per RF station (12 BSA values per RF station)
 
