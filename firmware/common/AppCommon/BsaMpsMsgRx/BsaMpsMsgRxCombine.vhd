@@ -236,7 +236,7 @@ begin
             v.diagnosticBus.strobe := '1';
 
             -- Zero out the word
-            v.diagnosticBus.sevr(30) := x"0000_0000";
+            v.diagnosticBus.sevr(30) := b"00";
             v.diagnosticBus.data(30) := x"0000_0000";
 
             -- Loop through the remote channels
