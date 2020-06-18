@@ -235,17 +235,18 @@ begin
             v.fifoRd               := '1';
             v.diagnosticBus.strobe := '1';
 
+            -- Zero out the word
+            v.diagnosticBus.sevr(30) := x"0000_0000";
+            v.diagnosticBus.data(30) := x"0000_0000";
+
             -- Loop through the remote channels
             for i in 3 downto 0 loop
 
                -- Update the MPS message
-               v.diagnosticBus.sevr(28+i) := r.sevr(i);
+               v.diagnosticBus.sevr(30) := r.sevr(i) or v.diagnosticBus.sevr(30);
                if (r.sevr(i) = "00") then
-                  v.diagnosticBus.data(28+i) := x"0000_000" & remoteMsg(i).mpsPermit;
-               else
-                  v.diagnosticBus.data(28+i) := x"0000_0000";
+                  v.diagnosticBus.data(30)((4*i)+3 downto 4*i) := remoteMsg(i).mpsPermit;
                end if;
-
 
                -- Check for drop due to misalignment
                if (r.aligned(i) = '0') then
