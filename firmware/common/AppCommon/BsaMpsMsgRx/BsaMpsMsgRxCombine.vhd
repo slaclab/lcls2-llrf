@@ -264,12 +264,20 @@ begin
                -------------------------------------------------
 
                -- Link 0
-               v.diagnosticBus.sevr(i+0) := remoteMsg(0).bsaSevr(i);
-               v.diagnosticBus.data(i+0) := remoteMsg(0).bsaQuantity(i);
+               v.diagnosticBus.sevr(i+0)(0)           := remoteMsg(0).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+0)(15 downto 0) := remoteMsg(0).bsaQuantity(i)(15 downto 0);  -- Only Mapping lower 16-bit from bsaQuantity
 
                -- Link 1
-               v.diagnosticBus.sevr(i+12) := remoteMsg(1).bsaSevr(i);
-               v.diagnosticBus.data(i+12) := remoteMsg(1).bsaQuantity(i);
+               v.diagnosticBus.sevr(i+0)(1)            := remoteMsg(1).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+0)(31 downto 16) := remoteMsg(1).bsaQuantity(i)(15 downto 0);  -- Only Mapping lower 16-bit from bsaQuantity
+
+               -- Link 2
+               v.diagnosticBus.sevr(i+12)(0)           := remoteMsg(2).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+12)(15 downto 0) := remoteMsg(2).bsaQuantity(i)(15 downto 0);  -- Only Mapping lower 16-bit from bsaQuantity
+
+               -- Link 3
+               v.diagnosticBus.sevr(i+12)(1)            := remoteMsg(3).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+12)(31 downto 16) := remoteMsg(3).bsaQuantity(i)(15 downto 0);  -- Only Mapping lower 16-bit from bsaQuantity
 
             end loop;
 
