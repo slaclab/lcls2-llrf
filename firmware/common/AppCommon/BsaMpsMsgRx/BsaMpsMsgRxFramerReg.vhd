@@ -5,11 +5,11 @@
 -- Description: RX Data Framer's register module
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -21,6 +21,8 @@ use ieee.std_logic_arith.all;
 library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
+
+use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxFramerReg is
    generic (
@@ -47,6 +49,8 @@ entity BsaMpsMsgRxFramerReg is
       sofDet          : in  sl;
       userValue       : in  slv(127 downto 0);
       gtRst           : out sl;
+      -- Copy of the remote message (axilClk domain)
+      remoteMsg       : in  MsgType;
       -- AXI-Lite Interface (axilClk domain)
       axilClk         : in  sl;
       axilRst         : in  sl;
@@ -102,7 +106,7 @@ architecture rtl of BsaMpsMsgRxFramerReg is
 begin
 
    comb : process (axilReadMaster, axilRst, axilWriteMaster, packetRate, r,
-                   rxBufStatusSync, sofRate, statusCnt, statusOut,
+                   remoteMsg, rxBufStatusSync, sofRate, statusCnt, statusOut,
                    userValueSync) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndPointType;
@@ -144,6 +148,14 @@ begin
       axiSlaveRegister(axilEp, x"7F4", 0, v.cntRst);
       axiSlaveRegister(axilEp, x"7F8", 0, v.gtRst);
       axiSlaveRegister(axilEp, x"7FC", 0, v.hardRst);
+
+      for i in 11 downto 0 loop
+         axiSlaveRegisterR(axilEp, toSlv(2048+(0*64)+4*i, 12), 0, remoteMsg.bsaQuantity(i));
+         axiSlaveRegisterR(axilEp, toSlv(2048+(1*64)+4*i, 12), 0, remoteMsg.bsaSevr(i));
+      end loop;
+
+      axiSlaveRegisterR(axilEp, x"900", 0, remoteMsg.mpsPermit);
+      axiSlaveRegisterR(axilEp, x"910", 0, remoteMsg.timeStamp);
 
       -- Closeout the transaction
       axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
@@ -264,9 +276,9 @@ begin
          statusIn(4 downto 3) => rxDispErr,
          statusIn(2 downto 1) => rxDecErr,
          statusIn(0)          => rxLinkUp,
-         -- Output Status bit Signals (rdClk domain)  
+         -- Output Status bit Signals (rdClk domain)
          statusOut            => statusOut,
-         -- Status Bit Counters Signals (rdClk domain) 
+         -- Status Bit Counters Signals (rdClk domain)
          cntRstIn             => r.cntRst,
          rollOverEnIn         => r.rollOverEn,
          cntOut               => statusCnt,

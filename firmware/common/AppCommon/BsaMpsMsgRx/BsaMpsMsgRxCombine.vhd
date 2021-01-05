@@ -2,15 +2,15 @@
 -- File       : BsaMpsMsgRxCombine.vhd
 -- Company    : SLAC National Accelerator Laboratory
 -------------------------------------------------------------------------------
--- Description: Combines the timingBus with the two remote links to form the 
+-- Description: Combines the timingBus with the two remote links to form the
 --              diagnosticBus message.
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -36,9 +36,8 @@ use work.BsaMpsMsgRxFramerPkg.all;
 
 entity BsaMpsMsgRxCombine is
    generic (
-      TPD_G            : time            := 1 ns;
-      SIMULATION_G     : boolean         := false;
-      AXI_ERROR_RESP_G : slv(1 downto 0) := AXI_RESP_SLVERR_C);
+      TPD_G        : time    := 1 ns;
+      SIMULATION_G : boolean := false);
    port (
       -- AXI-Lite Interface (axilClk domain)
       axilClk         : in  sl;
@@ -47,11 +46,11 @@ entity BsaMpsMsgRxCombine is
       axilReadSlave   : out AxiLiteReadSlaveType;
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
-      -- RX Frame Interface 
-      remoteRd        : out slv(1 downto 0);
-      remoteLinkUp    : in  slv(1 downto 0);
-      remoteValid     : in  slv(1 downto 0);
-      remoteMsg       : in  MsgArray(1 downto 0);
+      -- RX Frame Interface
+      remoteRd        : out slv(3 downto 0);
+      remoteLinkUp    : in  slv(3 downto 0);
+      remoteValid     : in  slv(3 downto 0);
+      remoteMsg       : in  MsgArray(3 downto 0);
       -- Timing Interface
       timingBus       : in  TimingBusType;
       -- Diagnostic Interface
@@ -67,12 +66,12 @@ architecture rtl of BsaMpsMsgRxCombine is
 
    type RegType is record
       cntRst         : sl;
-      dropCnt        : Slv32Array(1 downto 0);
+      dropCnt        : Slv32Array(3 downto 0);
       fifoRd         : sl;
-      aligned        : slv(1 downto 0);
-      sevr           : Slv2Array(1 downto 0);
-      timeStampDebug : Slv64Array(2 downto 0);
-      remoteRd       : slv(1 downto 0);
+      aligned        : slv(3 downto 0);
+      sevr           : Slv2Array(3 downto 0);
+      timeStampDebug : Slv64Array(4 downto 0);
+      remoteRd       : slv(3 downto 0);
       diagnosticBus  : DiagnosticBusType;
       axilReadSlave  : AxiLiteReadSlaveType;
       axilWriteSlave : AxiLiteWriteSlaveType;
@@ -141,16 +140,16 @@ begin
    comb : process (axilReadMaster, axilRst, axilWriteMaster, fifoValid,
                    packetRate, progFull, r, remoteLinkUp, remoteMsg,
                    remoteValid, timingMessage) is
-      variable v           : RegType;
-      variable axilEp      : AxiLiteEndPointType;
-      variable busy        : sl;
-      variable remoteAhead : slv(1 downto 0);
+      variable v         : RegType;
+      variable axilEp    : AxiLiteEndPointType;
+      variable busy      : sl;
+      variable alignment : slv(3 downto 0);
    begin
       -- Latch the current value
       v := r;
 
       -- Reset the strobes
-      remoteAhead            := (others => '0');
+      alignment              := (others => '0');
       v.remoteRd             := (others => '0');
       v.fifoRd               := '0';
       v.diagnosticBus.strobe := '0';
@@ -170,7 +169,7 @@ begin
             if (fifoValid = '1') and (busy = '0') then
 
                -- Check the local FIFO threshold or no links
-               if (progFull = '1') or (remoteLinkUp = "00") then
+               if (progFull = '1') or (remoteLinkUp = 0) then
                   -- Next state
                   v.state := CHECK_ALIGN_S;
 
@@ -183,16 +182,14 @@ begin
             end if;
          ----------------------------------------------------------------------
          when CHECK_ALIGN_S =>
-            -- Default Next state
-            v.state := IDLE_S;
-
             -- Loop through the remote channels
-            for i in 1 downto 0 loop
+            for i in 3 downto 0 loop
 
                -- Check if behind in time with respect to local FIFO or no link
                if ((remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1')) or (remoteLinkUp(i) = '0') then
                   -- Blow off data
                   v.remoteRd(i) := '1';
+                  alignment(i)  := not(remoteLinkUp(i));
                else
 
                   -- Check if aligned with respect to local FIFO
@@ -200,12 +197,13 @@ begin
                      -- Set the flags
                      v.aligned(i) := '1';
                      v.sevr(i)    := "00";
+                     alignment(i) := '1';
                   end if;
 
                   -- Check if ahead in time with respect to local FIFO
                   if (remoteMsg(i).timeStamp > timingMessage.timeStamp) and (remoteValid(i) = '1') then
                      -- Set the flag
-                     remoteAhead(i) := '1';
+                     alignment(i) := '1';
                   end if;
 
                end if;
@@ -218,60 +216,17 @@ begin
             end loop;
 
             -- Keep a copy for debugging
-            v.timeStampDebug(2) := timingMessage.timeStamp;
+            v.timeStampDebug(4) := timingMessage.timeStamp;
 
-            if (progFull = '1') or (remoteLinkUp = "00") then
+            -- Check if ready to send BSA message
+            if (progFull = '1') or (alignment = "1111") then
                -- Next state
                v.state := SEND_MSG_S;
 
-            -- Check for both links up
-            elsif (remoteLinkUp = "11") then
-
-               -- Check if both remote channels are aligned to local channel
-               if (v.aligned = "11") then
-                  -- Next state
-                  v.state := SEND_MSG_S;
-
-               -- Check if both remote channels are ahead of time
-               elsif (remoteAhead = "11") then
-                  -- Next state
-                  v.state := SEND_MSG_S;
-
-               -- Check if link0 aligned but link1 ahead
-               elsif (v.aligned = "01") and (remoteAhead = "10") then
-                  -- Next state
-                  v.state := SEND_MSG_S;
-
-               -- Check if link1 aligned but link0 ahead
-               elsif (v.aligned = "10") and (remoteAhead = "01") then
-                  -- Next state
-                  v.state := SEND_MSG_S;
-               end if;
-
-            -- Else check for individual links
+            -- Return to IDLE
             else
-
-               -- Loop through the remote channels
-               for i in 1 downto 0 loop
-
-                  -- Check if link up
-                  if (remoteLinkUp(i) = '1') then
-
-                     -- Check if both remote channels are aligned to local channel
-                     if (v.aligned(i) = '1') then
-                        -- Next state
-                        v.state := SEND_MSG_S;
-
-                     -- Check if both remote channels are ahead of time
-                     elsif (remoteAhead(i) = '1') then
-                        -- Next state
-                        v.state := SEND_MSG_S;
-                     end if;
-
-                  end if;
-
-               end loop;
-
+               -- Next state
+               v.state := IDLE_S;
             end if;
          ----------------------------------------------------------------------
          when SEND_MSG_S =>
@@ -280,40 +235,18 @@ begin
             v.fifoRd               := '1';
             v.diagnosticBus.strobe := '1';
 
-            -- Update the data field
-            for i in 11 downto 0 loop
-
-               -- Link 0
-               v.diagnosticBus.sevr(i+0) := remoteMsg(0).bsaSevr(i);
-               v.diagnosticBus.data(i+0) := remoteMsg(0).bsaQuantity(i);
-
-               -- Link 1
-               v.diagnosticBus.sevr(i+12) := remoteMsg(1).bsaSevr(i);
-               v.diagnosticBus.data(i+12) := remoteMsg(1).bsaQuantity(i);
-
-            end loop;
-
-            -- Link 0
-            v.diagnosticBus.sevr(30) := r.sevr(0);
-            if (r.sevr(0) = "00") then
-               v.diagnosticBus.data(30) := x"0000_000" & remoteMsg(0).mpsPermit;
-            else
-               v.diagnosticBus.data(30) := x"0000_0000";
-            end if;
-
-            -- Link 1
-            v.diagnosticBus.sevr(31) := r.sevr(1);
-            if (r.sevr(1) = "00") then
-               v.diagnosticBus.data(31) := x"0000_000" & remoteMsg(1).mpsPermit;
-            else
-               v.diagnosticBus.data(31) := x"0000_0000";
-            end if;
-
-            -- Update the message field
-            v.diagnosticBus.timingMessage := timingMessage;
+            -- Zero out the word
+            v.diagnosticBus.sevr(30) := b"00";
+            v.diagnosticBus.data(30) := x"0000_0000";
 
             -- Loop through the remote channels
-            for i in 1 downto 0 loop
+            for i in 3 downto 0 loop
+
+               -- Update the MPS message
+               v.diagnosticBus.sevr(30) := r.sevr(i) or v.diagnosticBus.sevr(30);
+               if (r.sevr(i) = "00") then
+                  v.diagnosticBus.data(30)((4*i)+3 downto 4*i) := remoteMsg(i).mpsPermit;
+               end if;
 
                -- Check for drop due to misalignment
                if (r.aligned(i) = '0') then
@@ -323,6 +256,34 @@ begin
 
             end loop;
 
+            -- Update the data field
+            for i in 11 downto 0 loop
+
+               -------------------------------------------------
+               -- TODO: Adding new mapping (waiting for Berkley)
+               -------------------------------------------------
+
+               -- Link 0
+               v.diagnosticBus.sevr(i+0)(0)           := remoteMsg(0).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+0)(15 downto 0) := remoteMsg(0).bsaQuantity(i)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
+
+               -- Link 1
+               v.diagnosticBus.sevr(i+0)(1)            := remoteMsg(1).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+0)(31 downto 16) := remoteMsg(1).bsaQuantity(i)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
+
+               -- Link 2
+               v.diagnosticBus.sevr(i+12)(0)           := remoteMsg(2).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+12)(15 downto 0) := remoteMsg(2).bsaQuantity(i)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
+
+               -- Link 3
+               v.diagnosticBus.sevr(i+12)(1)            := remoteMsg(3).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
+               v.diagnosticBus.data(i+12)(31 downto 16) := remoteMsg(3).bsaQuantity(i)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
+
+            end loop;
+
+            -- Update the message field
+            v.diagnosticBus.timingMessage := timingMessage;
+
             -- Next state
             v.state := IDLE_S;
       ----------------------------------------------------------------------
@@ -331,30 +292,28 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axilWriteMaster, axilReadMaster, v.axilWriteSlave, v.axilReadSlave);
 
-      for i in 11 downto 0 loop
-         -- Link 0
-         axiSlaveRegisterR(axilEp, toSlv((0*64)+4*i, 12), 0, r.diagnosticBus.data(i+0));
-         axiSlaveRegisterR(axilEp, toSlv((1*64)+4*i, 12), 0, r.diagnosticBus.sevr(i+0));
-         -- Link 1
-         axiSlaveRegisterR(axilEp, toSlv((2*64)+4*i, 12), 0, r.diagnosticBus.data(i+12));
-         axiSlaveRegisterR(axilEp, toSlv((3*64)+4*i, 12), 0, r.diagnosticBus.sevr(i+12));
+      for i in 31 downto 0 loop
+         axiSlaveRegisterR(axilEp, toSlv((0*128)+4*i, 12), 0, r.diagnosticBus.data(i));  -- 0x000:0x07F
+         axiSlaveRegisterR(axilEp, toSlv((1*128)+4*i, 12), 0, r.diagnosticBus.sevr(i));  -- 0x080:0x0FF
       end loop;
 
-      axiSlaveRegisterR(axilEp, x"700", 0, r.dropCnt(0));
-      axiSlaveRegisterR(axilEp, x"704", 0, r.dropCnt(1));
-      axiSlaveRegisterR(axilEp, x"708", 0, packetRate);
+      axiSlaveRegisterR(axilEp, x"100", 0, r.dropCnt(0));
+      axiSlaveRegisterR(axilEp, x"110", 0, r.dropCnt(1));
+      axiSlaveRegisterR(axilEp, x"120", 0, r.dropCnt(2));
+      axiSlaveRegisterR(axilEp, x"130", 0, r.dropCnt(3));
 
-      axiSlaveRegisterR(axilEp, x"710", 0, remoteMsg(0).mpsPermit);
-      axiSlaveRegisterR(axilEp, x"714", 0, remoteMsg(1).mpsPermit);
+      axiSlaveRegisterR(axilEp, x"200", 0, r.timeStampDebug(0));
+      axiSlaveRegisterR(axilEp, x"210", 0, r.timeStampDebug(1));
+      axiSlaveRegisterR(axilEp, x"220", 0, r.timeStampDebug(2));
+      axiSlaveRegisterR(axilEp, x"230", 0, r.timeStampDebug(3));
+      axiSlaveRegisterR(axilEp, x"240", 0, r.timeStampDebug(4));
 
-      axiSlaveRegisterR(axilEp, x"800", 0, r.timeStampDebug(0));
-      axiSlaveRegisterR(axilEp, x"810", 0, r.timeStampDebug(1));
-      axiSlaveRegisterR(axilEp, x"820", 0, r.timeStampDebug(2));
+      axiSlaveRegisterR(axilEp, x"300", 0, packetRate);
 
       axiSlaveRegister(axilEp, x"FFC", 0, v.cntRst);
 
       -- Closeout the transaction
-      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_ERROR_RESP_G);
+      axiSlaveDefault(axilEp, v.axilWriteSlave, v.axilReadSlave, AXI_RESP_SLVERR_C);
 
       -- Check for counter reset
       if (r.cntRst = '1') then
@@ -372,8 +331,7 @@ begin
 
       -- Outputs
       fifoRd         <= r.fifoRd;
-      remoteRd(0)    <= r.remoteRd(0);
-      remoteRd(1)    <= r.remoteRd(1);
+      remoteRd       <= r.remoteRd;
       diagnosticBus  <= r.diagnosticBus;
       axilWriteSlave <= r.axilWriteSlave;
       axilReadSlave  <= r.axilReadSlave;

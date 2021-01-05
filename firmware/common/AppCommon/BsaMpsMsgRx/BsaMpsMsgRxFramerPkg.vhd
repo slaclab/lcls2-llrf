@@ -5,11 +5,11 @@
 -- Description: RX Data Framer Package File
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ package body BsaMpsMsgRxFramerPkg is
       -- Load the MPS permit
       retVar.mpsPermit := dout(451 downto 448);
 
-      -- Load the BSA Severity 
+      -- Load the BSA Severity
       for i in 11 downto 0 loop
          retVar.bsaSevr(i) := dout((i*2)+453 downto (i*2)+452);
       end loop;
@@ -87,7 +87,7 @@ package body BsaMpsMsgRxFramerPkg is
       -- Load the MPS permit
       retVar(451 downto 448) := msg.mpsPermit;
 
-      -- Load the BSA Severity 
+      -- Load the BSA Severity
       for i in 11 downto 0 loop
          retVar((i*2)+453 downto (i*2)+452) := msg.bsaSevr(i);
       end loop;

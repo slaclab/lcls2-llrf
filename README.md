@@ -21,7 +21,9 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
     * [PC-379-396-09-C02](https://confluence.slac.stanford.edu/display/AIRTRACK/PC_379_396_09_C02): (or newer)
     * SFP[0] = LLRF Fiber[0]    
     * SFP[1] = LLRF Fiber[1]    
-    * SFP[7:2] = Empty     
+    * SFP[2] = LLRF Fiber[2]    
+    * SFP[3] = LLRF Fiber[3]        
+    * SFP[7:4] = Empty     
 * AMC.BAY[1]: 
     * Install AMC filler card
 * RTM: 
@@ -35,12 +37,17 @@ LCLS-II HPS LLRF MPS/BSA Receiver firmware.
              |    BAY[1]   |             ||-----|       |
              |             |             |      |       |
              |-------------| AMC Carrier |      |       |
-fiber[1]    |-------------|             |      |       |
+fiber[3]    |-------------|             |      |       |
+------------|SFP[3]       |             |      |       |
+fiber[2]    |             |             |      |       |
+------------|SFP[2]       |             |      |       |
+fiber[1]    |     BAY[0]  |             |      |       |
 ------------|SFP[1]       |             |      |       |
-fiber[0]    |    BAY[0]   |             |      |       |
+fiber[0]    |             |             |      |       |
 ------------|SFP[0]       |             |      |       |
              |-------------|             |      |       |
              |---------------------------|      |-------|
+              
 ```
 Note: 1 fiber per RF station (12 BSA values per RF station)
 

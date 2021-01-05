@@ -5,11 +5,11 @@
 -- Description: Application Core's Top Level
 -------------------------------------------------------------------------------
 -- This file is part of 'LCLS2 LLRF Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'LCLS2 LLRF Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'LCLS2 LLRF Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 -------------------------------------------------------------------------------
 
@@ -35,10 +35,9 @@ use work.BsaMpsMsgRxFramerPkg.all;
 
 entity Application is
    generic (
-      TPD_G            : time             := 1 ns;
-      SIMULATION_G     : boolean          := false;
-      AXI_BASE_ADDR_G  : slv(31 downto 0) := x"80000000";
-      AXI_ERROR_RESP_G : slv(1 downto 0)  := AXI_RESP_SLVERR_C);
+      TPD_G           : time             := 1 ns;
+      SIMULATION_G    : boolean          := false;
+      AXI_BASE_ADDR_G : slv(31 downto 0) := x"80000000");
    port (
       ----------------------
       -- Top Level Interface
@@ -50,7 +49,7 @@ entity Application is
       axilReadSlave        : out AxiLiteReadSlaveType;
       axilWriteMaster      : in  AxiLiteWriteMasterType;
       axilWriteSlave       : out AxiLiteWriteSlaveType;
-      -- Timing Interface (timingClk domain) 
+      -- Timing Interface (timingClk domain)
       timingClk            : out sl;
       timingRst            : out sl;
       timingBus            : in  TimingBusType;
@@ -98,31 +97,33 @@ entity Application is
       -- Application Ports --
       -----------------------
       -- Remote LLRF BSA/MPS Ports
-      gtRxP                : in  slv(1 downto 0);
-      gtRxN                : in  slv(1 downto 0);
-      gtTxP                : out slv(1 downto 0);
-      gtTxN                : out slv(1 downto 0));
+      gtRxP                : in  slv(3 downto 0);
+      gtRxN                : in  slv(3 downto 0);
+      gtTxP                : out slv(3 downto 0);
+      gtTxN                : out slv(3 downto 0));
 end Application;
 
 architecture mapping of Application is
 
-   constant NUM_AXI_MASTERS_C : natural := 3;
+   constant NUM_AXI_MASTERS_C : natural := 5;
 
    constant AXI_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXI_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXI_MASTERS_C, AXI_BASE_ADDR_G, 31, 28);
 
    constant RX0_INDEX_C     : natural := 0;
    constant RX1_INDEX_C     : natural := 1;
-   constant COMBINE_INDEX_C : natural := 2;
+   constant RX2_INDEX_C     : natural := 2;
+   constant RX3_INDEX_C     : natural := 3;
+   constant COMBINE_INDEX_C : natural := 4;
 
    signal axilWriteMasters : AxiLiteWriteMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
 
-   signal remoteRd     : slv(1 downto 0);
-   signal remoteLinkUp : slv(1 downto 0);
-   signal remoteValid  : slv(1 downto 0);
-   signal remoteMsg    : MsgArray(1 downto 0);
+   signal remoteRd     : slv(3 downto 0);
+   signal remoteLinkUp : slv(3 downto 0);
+   signal remoteValid  : slv(3 downto 0);
+   signal remoteMsg    : MsgArray(3 downto 0);
 
    signal txData  : slv(15 downto 0);
    signal txDataK : slv(1 downto 0);
@@ -184,7 +185,6 @@ begin
    U_XBAR : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_G,
-         DEC_ERROR_RESP_G   => AXI_ERROR_RESP_G,
          NUM_SLAVE_SLOTS_G  => 1,
          NUM_MASTER_SLOTS_G => NUM_AXI_MASTERS_C,
          MASTERS_CONFIG_G   => AXI_CONFIG_C)
@@ -201,16 +201,15 @@ begin
          mAxiReadSlaves      => axilReadSlaves);
 
 
-   GEN_VEC : for i in 1 downto 0 generate
+   GEN_VEC : for i in 3 downto 0 generate
 
       --------------------
       -- BSA/MPS Receivers
-      --------------------   
+      --------------------
       U_BsaMpsMsgRx : entity work.BsaMpsMsgRxCore
          generic map (
-            TPD_G            => TPD_G,
-            SIMULATION_G     => SIMULATION_G,
-            AXI_ERROR_RESP_G => AXI_ERROR_RESP_G)
+            TPD_G        => TPD_G,
+            SIMULATION_G => SIMULATION_G)
          port map (
             -- AXI-Lite Interface (axilClk domain)
             axilClk         => axilClk,
@@ -219,7 +218,7 @@ begin
             axilReadSlave   => axilReadSlaves(i),
             axilWriteMaster => axilWriteMasters(i),
             axilWriteSlave  => axilWriteSlaves(i),
-            -- RX Frame Interface (axilClk domain)     
+            -- RX Frame Interface (axilClk domain)
             remoteRd        => remoteRd(i),
             remoteLinkUp    => remoteLinkUp(i),
             remoteValid     => remoteValid(i),
@@ -267,9 +266,8 @@ begin
    ------------------------------
    U_Combine : entity work.BsaMpsMsgRxCombine
       generic map (
-         TPD_G            => TPD_G,
-         SIMULATION_G     => SIMULATION_G,
-         AXI_ERROR_RESP_G => AXI_ERROR_RESP_G)
+         TPD_G        => TPD_G,
+         SIMULATION_G => SIMULATION_G)
       port map (
          -- AXI-Lite Interface
          axilClk         => axilClk,

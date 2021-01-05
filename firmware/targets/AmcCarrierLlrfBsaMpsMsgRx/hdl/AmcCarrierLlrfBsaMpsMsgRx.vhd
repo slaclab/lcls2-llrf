@@ -41,10 +41,10 @@ entity AmcCarrierLlrfBsaMpsMsgRx is
       -- Application Ports --
       -----------------------
       -- Remote LLRF BSA/MPS Ports
-      gtRxP            : in    slv(1 downto 0);
-      gtRxN            : in    slv(1 downto 0);
-      gtTxP            : out   slv(1 downto 0);
-      gtTxN            : out   slv(1 downto 0);
+      gtRxP            : in    slv(3 downto 0);
+      gtRxN            : in    slv(3 downto 0);
+      gtTxP            : out   slv(3 downto 0);
+      gtTxN            : out   slv(3 downto 0);
       ----------------
       -- Core Ports --
       ----------------   
