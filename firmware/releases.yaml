@@ -18,7 +18,7 @@ Targets:
       - mcs
 
 Releases:
-  all:
+  lcls2_llrf:
     Primary: True
     Targets:
       - AmcCarrierLlrfBsaMpsMsgRx

@@ -1,7 +1,7 @@
 ##########################################################################################
 # Applications must define the 32-bitFirmware Version Number
 ##########################################################################################
-export PRJ_VERSION = 0x02000000
+export PRJ_VERSION = 0x02010000
 
 ##########################################################################################
 # Applications must define if using advance AMC carrier build
@@ -74,3 +74,8 @@ export PRJ_PART = XCKU040-FFVA1156-2-E
 
 # Use top level makefile
 include ../../submodules/ruckus/system_vivado.mk
+
+# Define release
+ifndef RELEASE
+export RELEASE = lcls2_llrf
+endif
