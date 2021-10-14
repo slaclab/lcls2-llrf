@@ -261,10 +261,6 @@ begin
             -- Update the data field
             for i in 11 downto 0 loop
 
-               -------------------------------------------------
-               -- TODO: Adding new mapping (waiting for Berkley)
-               -------------------------------------------------
-
                -- Link 0
                v.diagnosticBus.sevr(i+0)(0)           := remoteMsg(0).bsaSevr(i)(0);  -- Only Mapping bsaSevr's LSB
                v.diagnosticBus.data(i+0)(15 downto 0) := remoteMsg(0).bsaQuantity(i)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
