@@ -221,18 +221,19 @@ begin
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
                -- Forward the data to CRC
-               v.crcValid       := '1';
-               v.crcData        := r.rxData;
+               v.crcValid         := '1';
+               v.crcData          := r.rxData;
                -- Save the bus value
-               v.msg.mpsPermit  := r.rxData(3 downto 0);
-               v.msg.bsaSevr(0) := r.rxData(5 downto 4);
-               v.msg.bsaSevr(1) := r.rxData(7 downto 6);
-               v.msg.bsaSevr(2) := r.rxData(9 downto 8);
-               v.msg.bsaSevr(3) := r.rxData(11 downto 10);
-               v.msg.bsaSevr(4) := r.rxData(13 downto 12);
-               v.msg.bsaSevr(5) := r.rxData(15 downto 14);
+               v.msg.mpsPermit(0) := r.rxData(1 downto 0);
+               v.msg.mpsPermit(1) := r.rxData(3 downto 2);
+               v.msg.bsaSevr(0)   := r.rxData(5 downto 4);
+               v.msg.bsaSevr(1)   := r.rxData(7 downto 6);
+               v.msg.bsaSevr(2)   := r.rxData(9 downto 8);
+               v.msg.bsaSevr(3)   := r.rxData(11 downto 10);
+               v.msg.bsaSevr(4)   := r.rxData(13 downto 12);
+               v.msg.bsaSevr(5)   := r.rxData(15 downto 14);
                -- Next State
-               v.state          := BSA_SEVR_S;
+               v.state            := BSA_SEVR_S;
             else
                -- Next state
                v.state := IDLE_S;
@@ -242,18 +243,19 @@ begin
             -- Check for valid data
             if (r.rxValid = '1') and (r.rxdataK = "00") then
                -- Forward the data to CRC
-               v.crcValid        := '1';
-               v.crcData         := r.rxData;
+               v.crcValid         := '1';
+               v.crcData          := r.rxData;
                -- Save the bus value
-               -- Note: r.rxData(3 downto 0) not used and undefined
-               v.msg.bsaSevr(6)  := r.rxData(5 downto 4);
-               v.msg.bsaSevr(7)  := r.rxData(7 downto 6);
-               v.msg.bsaSevr(8)  := r.rxData(9 downto 8);
-               v.msg.bsaSevr(9)  := r.rxData(11 downto 10);
-               v.msg.bsaSevr(10) := r.rxData(13 downto 12);
-               v.msg.bsaSevr(11) := r.rxData(15 downto 14);
+               v.msg.mpsPermit(2) := r.rxData(1 downto 0);
+               v.msg.mpsPermit(3) := r.rxData(3 downto 2);
+               v.msg.bsaSevr(6)   := r.rxData(5 downto 4);
+               v.msg.bsaSevr(7)   := r.rxData(7 downto 6);
+               v.msg.bsaSevr(8)   := r.rxData(9 downto 8);
+               v.msg.bsaSevr(9)   := r.rxData(11 downto 10);
+               v.msg.bsaSevr(10)  := r.rxData(13 downto 12);
+               v.msg.bsaSevr(11)  := r.rxData(15 downto 14);
                -- Next State
-               v.state           := BSA_DATA_S;
+               v.state            := BSA_DATA_S;
             else
                -- Next state
                v.state := IDLE_S;

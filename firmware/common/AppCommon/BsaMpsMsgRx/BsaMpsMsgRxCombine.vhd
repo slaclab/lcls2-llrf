@@ -245,7 +245,9 @@ begin
                -- Update the MPS message
                v.diagnosticBus.sevr(30) := r.sevr(i) or v.diagnosticBus.sevr(30);
                if (r.sevr(i) = "00") then
-                  v.diagnosticBus.data(30)((4*i)+3 downto 4*i) := remoteMsg(i).mpsPermit;
+                  for j in 3 downto 0 loop
+                     v.diagnosticBus.data(30)((8*i)+(2*j)+1 downto (8*i)+(2*j)) := remoteMsg(i).mpsPermit(j);
+                  end loop;
                end if;
 
                -- Check for drop due to misalignment

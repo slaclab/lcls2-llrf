@@ -336,7 +336,7 @@ BsaMpsMsgRxCore: &BsaMpsMsgRxCore
       class: IntField
       name: MpsPermit
       mode: RO
-      sizeBits: 4
+      sizeBits: 8
       description: Remote MpsPermit
     #########################################################
     RemoteTimestamp:

@@ -154,7 +154,10 @@ begin
          axiSlaveRegisterR(axilEp, toSlv(2048+(1*64)+4*i, 12), 0, remoteMsg.bsaSevr(i));
       end loop;
 
-      axiSlaveRegisterR(axilEp, x"900", 0, remoteMsg.mpsPermit);
+      for i in 3 downto 0 loop
+         axiSlaveRegisterR(axilEp, x"900", (2*i), remoteMsg.mpsPermit(i));
+      end loop;
+
       axiSlaveRegisterR(axilEp, x"910", 0, remoteMsg.timeStamp);
 
       -- Closeout the transaction
