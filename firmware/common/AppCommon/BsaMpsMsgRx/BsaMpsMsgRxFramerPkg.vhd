@@ -21,17 +21,17 @@ use surf.StdRtlPkg.all;
 
 package BsaMpsMsgRxFramerPkg is
 
-   constant RX_MSG_FIFO_WIDTH_C : positive := 476;
+   constant RX_MSG_FIFO_WIDTH_C : positive := 480;
 
    type MsgType is record
-      mpsPermit   : slv(3 downto 0);
+      mpsPermit   : Slv2Array(3 downto 0);
       timeStamp   : slv(63 downto 0);
       bsaSevr     : Slv2Array(11 downto 0);
       bsaQuantity : Slv32Array(11 downto 0);
    end record MsgType;
    type MsgArray is array (natural range <>) of MsgType;
    constant MSG_INIT_C : MsgType := (
-      mpsPermit   => (others => '0'),
+      mpsPermit   => (others => (others => '0')),
       timeStamp   => (others => '0'),
       bsaSevr     => (others => (others => '0')),
       bsaQuantity => (others => (others => '0')));
@@ -59,11 +59,13 @@ package body BsaMpsMsgRxFramerPkg is
       retVar.timeStamp := dout(447 downto 384);
 
       -- Load the MPS permit
-      retVar.mpsPermit := dout(451 downto 448);
+      for i in 3 downto 0 loop
+         retVar.mpsPermit(i) := dout((i*2)+449 downto (i*2)+448);
+      end loop;
 
       -- Load the BSA Severity
       for i in 11 downto 0 loop
-         retVar.bsaSevr(i) := dout((i*2)+453 downto (i*2)+452);
+         retVar.bsaSevr(i) := dout((i*2)+457 downto (i*2)+456);
       end loop;
 
       return retVar;
@@ -85,11 +87,13 @@ package body BsaMpsMsgRxFramerPkg is
       retVar(447 downto 384) := msg.timeStamp;
 
       -- Load the MPS permit
-      retVar(451 downto 448) := msg.mpsPermit;
+      for i in 3 downto 0 loop
+         retVar((i*2)+449 downto (i*2)+448) := msg.mpsPermit(i);
+      end loop;
 
       -- Load the BSA Severity
       for i in 11 downto 0 loop
-         retVar((i*2)+453 downto (i*2)+452) := msg.bsaSevr(i);
+         retVar((i*2)+457 downto (i*2)+456) := msg.bsaSevr(i);
       end loop;
 
       return retVar;
