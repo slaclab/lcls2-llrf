@@ -155,6 +155,9 @@ begin
       v.diagnosticBus.strobe := '0';
       v.cntRst               := '0';
 
+      -- do not add/average (static)
+      v.diagnosticBus.fixed := (others => '1');
+
       -- Check if busy reading one of the FIFOs
       busy := uOr(r.remoteRd) or r.fifoRd or r.diagnosticBus.strobe;
 
