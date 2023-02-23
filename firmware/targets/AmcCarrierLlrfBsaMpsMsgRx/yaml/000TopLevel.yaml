@@ -11,7 +11,7 @@
 #once 000TopLevel.yaml
 #include AmcCarrierCore.yaml
 #include AmcCarrierDRAM.yaml
-#include AppTop.yaml
+#include Application.yaml
 
 # It is important to use the same parameters
 # for shared protocol modules (e.g., all RSSI
