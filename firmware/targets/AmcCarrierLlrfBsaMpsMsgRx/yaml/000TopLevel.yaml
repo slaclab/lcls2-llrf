@@ -47,19 +47,19 @@ mmio: &mmio
     ################################################## 
   
 stream: &stream
-    SRP:
-      protocolVersion: SRP_UDP_NONE
-    UDP:
-      <<: *udpParams
-      port: 8194
-      numRxThreads: 2
-    RSSI:
-      <<: *rssiParams
-    stripHeader: yes
-    depack:
-      useDepack: yes
-    TDESTMux:
-      TDEST: 0x80
+  SRP:
+    protocolVersion: SRP_UDP_NONE
+  UDP:
+    <<: *udpParams
+    port: 8194
+    numRxThreads: 2
+  RSSI:
+    <<: *rssiParams
+  stripHeader: yes
+  depack:
+    useDepack: yes
+  TDESTMux:
+    TDEST: 0x80
 
 strm: &strm
   size: 0x100000000 # 4GB of address space
@@ -70,6 +70,13 @@ strm: &strm
           at:
             offset: 0x00000000
 
+bldstream: &bldstream
+  SRP:
+    protocolVersion: SRP_UDP_NONE
+  UDP:
+    <<: *udpParams
+    port: 8198
+    pollSecs: 1
     
 NetIODev:
   ipAddr: 10.0.0.100
@@ -83,60 +90,11 @@ NetIODev:
            protocolVersion: SRP_UDP_V3
          UDP:
            port: 8193
-         RSSI:
-           <<: *rssiParams
+         RSSI: yes
          depack:
            useDepack: yes
          TDESTMux:
            TDEST: 0
-     Stream0:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x80
-     Stream1:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x81
-     Stream2:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x82
-     Stream3:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x83
-     Stream4:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x84
-     Stream5:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x85
-     Stream6:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x86
-     Stream7:
-       class: Field 
-       at:
-         <<: *stream
-         TDESTMux:
-           TDEST: 0x87
      strm:
        <<: *strm
        at:
@@ -144,10 +102,61 @@ NetIODev:
            protocolVersion: SRP_UDP_V3
          UDP:
            port: 8194
-         RSSI:
-           <<: *rssiParams
+         RSSI: yes
          depack:
            useDepack: yes
          TDESTMux:
            TDEST: 4
+     bldstream:
+       class: Field
+       at:
+         <<: *bldstream
+     Stream0:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x80
+     Stream1:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x81
+     Stream2:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x82
+     Stream3:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x83
+     Stream4:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x84
+     Stream5:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x85
+     Stream6:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x86
+     Stream7:
+       class: Field
+       at:
+         <<: *stream
+         TDESTMux:
+           TDEST: 0x87
 
