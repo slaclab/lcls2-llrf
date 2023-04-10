@@ -21,7 +21,7 @@
 connectionParameters:
   udp: &udpParams
     threadPriority: 80
-    numRxThreads:    4
+    numRxThreads:    1
   rssi: &rssiParams
     retransmissionTimeoutUS: 100000
     cumulativeAckTimeoutUS:   50000
@@ -52,7 +52,7 @@ stream: &stream
   UDP:
     <<: *udpParams
     port: 8194
-    numRxThreads: 2
+    numRxThreads: 1
   RSSI:
     <<: *rssiParams
   stripHeader: yes
@@ -89,8 +89,10 @@ NetIODev:
          SRP:
            protocolVersion: SRP_UDP_V3
          UDP:
+           <<: *udpParams
            port: 8193
-         RSSI: yes
+         RSSI:
+           <<: *rssiParams
          depack:
            useDepack: yes
          TDESTMux:
@@ -101,8 +103,10 @@ NetIODev:
          SRP:
            protocolVersion: SRP_UDP_V3
          UDP:
+           <<: *udpParams
            port: 8194
-         RSSI: yes
+         RSSI:
+           <<: *rssiParams
          depack:
            useDepack: yes
          TDESTMux:
