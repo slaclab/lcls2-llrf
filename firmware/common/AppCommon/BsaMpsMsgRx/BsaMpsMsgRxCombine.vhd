@@ -318,10 +318,10 @@ begin
                for j in 5 downto 0 loop
 
                   -- Link[i].I[j][0]
-                  v.diagnosticBus.sevr(6*i+j)(0) := remoteMsg(i).bsaSevr(2*j+0)(0);  -- Only Mapping bsaSevr's LSB
+                  v.diagnosticBus.sevr(6*i+j)(0) := remoteMsg(i).bsaSevr(2*j+0)(0) or r.sevr(i)(0);  -- Only Mapping bsaSevr's LSB
 
                   -- Link[i].Q[j][0]
-                  v.diagnosticBus.sevr(6*i+j)(1) := remoteMsg(i).bsaSevr(2*j+1)(0);  -- Only Mapping bsaSevr's LSB
+                  v.diagnosticBus.sevr(6*i+j)(1) := remoteMsg(i).bsaSevr(2*j+1)(0) or r.sevr(i)(1);  -- Only Mapping bsaSevr's LSB
 
                   -- Link[i].I[j][31:16]
                   v.diagnosticBus.data(6*i+j)(15 downto 0) := remoteMsg(i).bsaQuantity(2*j+0)(31 downto 16);  -- Only Mapping upper 16-bit from bsaQuantity
