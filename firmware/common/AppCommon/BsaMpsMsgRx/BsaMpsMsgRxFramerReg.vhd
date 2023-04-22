@@ -122,7 +122,9 @@ begin
       -- Check for hard reset
       if (r.hardRst = '1') then
          -- Reset the register
-         v := REG_INIT_C;
+         v                := REG_INIT_C;
+         v.axilReadSlave  := r.axilReadSlave;
+         v.axilWriteSlave := r.axilWriteSlave;
       end if;
 
       -- Determine the transaction type
