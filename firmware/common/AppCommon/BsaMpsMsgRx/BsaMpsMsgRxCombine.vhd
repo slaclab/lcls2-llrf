@@ -372,6 +372,13 @@ begin
          v.dropCnt := (others => x"0000_0000");
       end if;
 
+      -- Force FIFO read if link is down
+      for i in 3 downto 0 loop
+         if remoteLinkUp(i) = '0' then
+            v.remoteRd(i) := '1';
+         end if;
+      end loop;
+
       -- Synchronous Reset
       if (axilRst = '1') then
          v := REG_INIT_C;
