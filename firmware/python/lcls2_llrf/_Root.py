@@ -18,7 +18,7 @@ import lcls2_llrf     as llrf
 class Root(pr.Root):
     def __init__(self,
             ip           = '10.0.0.107',
-            backdoorComm = False,
+            backdoorComm = True,
             **kwargs):
         super().__init__(**kwargs)
 

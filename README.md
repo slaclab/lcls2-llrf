@@ -167,34 +167,7 @@ $ ./start_gui.sh cpu-b15-rf02 8090
 
 # Before you clone the GIT repository
 
-1) Create a github account:
-> https://github.com/
-
-2) On the Linux machine that you will clone the github from, generate a SSH key (if not already done)
-> https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
-
-3) Add a new SSH key to your GitHub account
-> https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
-
-4) Setup for large filesystems on github
-
-```bash
-$ git lfs install
-```
-
-5) Verify that you have git version 2.13.0 (or later) installed 
-
-```bash
-$ git version
-git version 2.13.0
-```
-
-6) Verify that you have git-lfs version 2.1.1 (or later) installed 
-
-```bash
-$ git-lfs version
-git-lfs/2.1.1
-```
+https://confluence.slac.stanford.edu/x/vJmDFg
 
 <!--- ########################################################################################### -->
 
@@ -213,7 +186,7 @@ $ git clone --recursive git@github.com:slaclab/lcls2-llrf
 > If you are on the SLAC network, here's how to setup the Xilinx licensing
 
 ```bash
-$ source atlas-rd53-fmc-dev/firmware/setup_env_slac.sh
+$ source lcls2-llrf/firmware/setup_env_slac.sh
 ```
 
 2) Go to the target directory and make the firmware:
@@ -227,4 +200,29 @@ $ make
 $ make gui
 ```
 
-<!--- ########################################################################################### -->
+<!--- ######################################################## -->
+
+# How to install the Rogue With Anaconda
+
+> https://slaclab.github.io/rogue/installing/anaconda.html
+
+<!--- ######################################################## -->
+
+# How to run the Rogue GUI
+
+- Assumes AMC carrier's IP address is 10.0.0.107
+
+1) Setup the rogue environment (if on SLAC AFS network) else install rogue (recommend Anaconda method) on your local machine
+
+```bash
+$ source lcls2-llrf/software/setup_env_slac.sh
+```
+
+2) Go to software directory and lauch the GUI:
+
+```bash
+$ cd lcls2-llrf/software
+$ python scripts/devGui.py --ip 10.0.0.107
+```
+
+<!--- ######################################################## -->
