@@ -120,6 +120,7 @@ architecture mapping of Application is
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
    signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
 
+   signal remoteFlush  : slv(3 downto 0);
    signal remoteRd     : slv(3 downto 0);
    signal remoteLinkUp : slv(3 downto 0);
    signal remoteValid  : slv(3 downto 0);
@@ -219,6 +220,7 @@ begin
             axilWriteMaster => axilWriteMasters(i),
             axilWriteSlave  => axilWriteSlaves(i),
             -- RX Frame Interface (axilClk domain)
+            remoteFlush     => remoteFlush(i),
             remoteRd        => remoteRd(i),
             remoteLinkUp    => remoteLinkUp(i),
             remoteValid     => remoteValid(i),
@@ -277,6 +279,7 @@ begin
          axilWriteMaster => axilWriteMasters(COMBINE_INDEX_C),
          axilWriteSlave  => axilWriteSlaves(COMBINE_INDEX_C),
          -- RX Frame Interface
+         remoteFlush     => remoteFlush,
          remoteRd        => remoteRd,
          remoteLinkUp    => remoteLinkUp,
          remoteValid     => remoteValid,

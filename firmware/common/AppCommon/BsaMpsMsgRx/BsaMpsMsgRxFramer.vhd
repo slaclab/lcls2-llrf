@@ -62,6 +62,7 @@ entity BsaMpsMsgRxFramer is
       cPllLock        : in  sl;
       gtRst           : out sl;
       -- RX Frame Interface (axilClk domain)
+      remoteFlush     : in  sl;
       remoteRd        : in  sl;
       remoteLinkUp    : out sl;
       remoteValid     : out sl;
@@ -129,6 +130,7 @@ architecture rtl of BsaMpsMsgRxFramer is
    signal overflow  : sl;
    signal fifoDin   : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
    signal fifoDout  : slv(RX_MSG_FIFO_WIDTH_C-1 downto 0);
+   signal fifoReset : sl;
 
    signal linkUp        : sl;
    signal remoteMsgCopy : MsgType := MSG_INIT_C;
@@ -394,12 +396,12 @@ begin
    U_Fifo : entity surf.FifoAsync
       generic map (
          TPD_G         => TPD_G,
-         MEMORY_TYPE_G => "distributed",
+         MEMORY_TYPE_G => "block",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => RX_MSG_FIFO_WIDTH_C,
-         ADDR_WIDTH_G  => 4)
+         ADDR_WIDTH_G  => 9)
       port map (
-         rst      => rxRst,
+         rst      => fifoReset,
          -- Write Ports
          wr_clk   => rxClk,
          wr_en    => r.fifoWr,
@@ -412,6 +414,8 @@ begin
          valid    => remoteValid);
 
    remoteMsg <= fromSlv(fifoDout);
+
+   fifoReset <= remoteFlush or rxRst;
 
    process(axilClk)
    begin

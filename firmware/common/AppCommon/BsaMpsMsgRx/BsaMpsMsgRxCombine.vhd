@@ -47,6 +47,7 @@ entity BsaMpsMsgRxCombine is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
       -- RX Frame Interface
+      remoteFlush     : out slv(3 downto 0);
       remoteRd        : out slv(3 downto 0);
       remoteLinkUp    : in  slv(3 downto 0);
       remoteValid     : in  slv(3 downto 0);
@@ -65,6 +66,7 @@ architecture rtl of BsaMpsMsgRxCombine is
       SEND_MSG_S);
 
    type RegType is record
+      remoteFlush    : slv(3 downto 0);
       cntRst         : sl;
       dropCnt        : Slv32Array(3 downto 0);
       fifoRd         : sl;
@@ -79,6 +81,7 @@ architecture rtl of BsaMpsMsgRxCombine is
    end record RegType;
 
    constant REG_INIT_C : RegType := (
+      remoteFlush    => (others => '0'),
       cntRst         => '0',
       dropCnt        => (others => (others => '0')),
       fifoRd         => '0',
@@ -150,6 +153,7 @@ begin
 
       -- Reset the strobes
       alignment              := (others => '0');
+      v.remoteFlush          := (others => '0');
       v.remoteRd             := (others => '0');
       v.fifoRd               := '0';
       v.diagnosticBus.strobe := '0';
@@ -191,8 +195,9 @@ begin
                -- Check if behind in time with respect to local FIFO or no link
                if ((remoteMsg(i).timeStamp < timingMessage.timeStamp) and (remoteValid(i) = '1')) or (remoteLinkUp(i) = '0') then
                   -- Blow off data
-                  v.remoteRd(i) := '1';
-                  alignment(i)  := not(remoteLinkUp(i));
+                  v.remoteRd(i)    := '1';
+                  v.remoteFlush(i) := '1';
+                  alignment(i)     := not(remoteLinkUp(i));
                else
 
                   -- Check if aligned with respect to local FIFO
@@ -382,6 +387,7 @@ begin
 
       -- Outputs
       fifoRd         <= r.fifoRd;
+      remoteFlush    <= r.remoteFlush;
       remoteRd       <= r.remoteRd;
       diagnosticBus  <= r.diagnosticBus;
       axilWriteSlave <= r.axilWriteSlave;

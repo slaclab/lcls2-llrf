@@ -48,6 +48,7 @@ entity BsaMpsMsgRxCore is
       axilWriteMaster : in  AxiLiteWriteMasterType;
       axilWriteSlave  : out AxiLiteWriteSlaveType;
       -- RX Frame Interface (axilClk domain)
+      remoteFlush     : in  sl;
       remoteRd        : in  sl;
       remoteLinkUp    : out sl;
       remoteValid     : out sl;
@@ -144,6 +145,7 @@ begin
          cPllLock        => cPllLock,
          gtRst           => gtRst,
          -- RX Frame Interface (axilClk domain)
+         remoteFlush     => remoteFlush,
          remoteRd        => remoteRd,
          remoteLinkUp    => remoteLinkUp,
          remoteValid     => remoteValid,
