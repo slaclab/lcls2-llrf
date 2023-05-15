@@ -124,8 +124,8 @@ begin
          MEMORY_TYPE_G => "distributed",
          FWFT_EN_G     => true,
          DATA_WIDTH_G  => TIMING_MESSAGE_BITS_C,
-         ADDR_WIDTH_G  => 4,            -- 2^4 = 16 samples
-         FULL_THRES_G  => 8)            -- 8 sample threshold
+         ADDR_WIDTH_G  => 9,            -- 2^9 = 512 samples
+         FULL_THRES_G  => 500)          -- 500 sample threshold
       port map (
          rst       => axilRst,
          clk       => axilClk,
