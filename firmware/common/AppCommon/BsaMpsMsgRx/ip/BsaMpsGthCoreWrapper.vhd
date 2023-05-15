@@ -188,11 +188,17 @@ begin
       rxBufStatus <= rxBuff  when(linkUp = '1') else (others => '0');
       dataValid   <= not (uOr(decErr) or uOr(dispErr));
 
-      process(rxClk)
+      rxReset <= gtRst or wdtRst or rxRst;
+
+      process(gtRst, rxClk, wdtRst)
       begin
-         if rising_edge(rxClk) then
-            rxReset <= gtRst or wdtRst or rxRst after TPD_G;
-            if (gtRst = '1') or(rxRst = '1')or (rxRstDone = '0') or (dataValid = '0') or (rxBuff(2) = '1') then
+         -- ASYNC reset
+         if (gtRst = '1') or (wdtRst = '1') then
+            cnt    <= (others => '0') after TPD_G;
+            linkUp <= '0'             after TPD_G;
+         elsif rising_edge(rxClk) then
+            -- SYNC reset
+            if (rxRst = '1') or (rxRstDone = '0') or (dataValid = '0') or (rxBuff(2) = '1') then
                cnt    <= (others => '0') after TPD_G;
                linkUp <= '0'             after TPD_G;
             else
