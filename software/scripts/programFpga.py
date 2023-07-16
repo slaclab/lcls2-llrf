@@ -10,7 +10,6 @@
 
 import setupLibPaths
 import pyrogue as pr
-import pyrogue.gui
 import sys
 import rogue
 import pyrogue.protocols

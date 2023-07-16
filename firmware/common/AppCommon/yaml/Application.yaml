@@ -34,3 +34,28 @@ AppCore: &Application
       at:
         offset: 0x40000000
     ##################################################
+    AppRst:
+      at:
+        offset: 0x50000100
+      class: IntField
+      name: AppRst
+      mode: RW
+      sizeBits: 1
+      description: Application reset register
+    ##################################################
+    RstApp:
+      name: RstApp
+      class: SequenceCommand
+      at:
+        offset: 0x0
+      description: Reset all the Application AXI-lite devices
+      sequence:
+      - entry: AppRst
+        value: 0x1
+      - entry: usleep
+        value: 1000000
+      - entry: AppRst
+        value: 0x0
+      - entry: usleep
+        value: 1000000
+    ##################################################

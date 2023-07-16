@@ -105,7 +105,7 @@ end Application;
 
 architecture mapping of Application is
 
-   constant NUM_AXI_MASTERS_C : natural := 5;
+   constant NUM_AXI_MASTERS_C : natural := 6;
 
    constant AXI_CONFIG_C : AxiLiteCrossbarMasterConfigArray(NUM_AXI_MASTERS_C-1 downto 0) := genAxiLiteConfig(NUM_AXI_MASTERS_C, AXI_BASE_ADDR_G, 31, 28);
 
@@ -114,11 +114,17 @@ architecture mapping of Application is
    constant RX2_INDEX_C     : natural := 2;
    constant RX3_INDEX_C     : natural := 3;
    constant COMBINE_INDEX_C : natural := 4;
+   constant RESET_INDEX_C   : natural := 5;
 
    signal axilWriteMasters : AxiLiteWriteMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
-   signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
+   signal axilWriteSlaves  : AxiLiteWriteSlaveArray(NUM_AXI_MASTERS_C-1 downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_DECERR_C);
    signal axilReadMasters  : AxiLiteReadMasterArray(NUM_AXI_MASTERS_C-1 downto 0);
-   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0);
+   signal axilReadSlaves   : AxiLiteReadSlaveArray(NUM_AXI_MASTERS_C-1 downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_DECERR_C);
+
+   signal appWriteMasters : AxiLiteWriteMasterArray(COMBINE_INDEX_C downto 0);
+   signal appWriteSlaves  : AxiLiteWriteSlaveArray(COMBINE_INDEX_C downto 0) := (others => AXI_LITE_WRITE_SLAVE_EMPTY_DECERR_C);
+   signal appReadMasters  : AxiLiteReadMasterArray(COMBINE_INDEX_C downto 0);
+   signal appReadSlaves   : AxiLiteReadSlaveArray(COMBINE_INDEX_C downto 0)  := (others => AXI_LITE_READ_SLAVE_EMPTY_DECERR_C);
 
    signal remoteFlush  : slv(3 downto 0);
    signal remoteRd     : slv(3 downto 0);
@@ -131,6 +137,11 @@ architecture mapping of Application is
 
    signal clk : sl;
    signal rst : sl;
+
+   signal readReg   : slv(31 downto 0) := (others => '0');
+   signal writeReg  : slv(31 downto 0) := (others => '0');
+   signal appReset  : sl;
+   signal axilReset : sl;
 
 begin
 
@@ -201,6 +212,29 @@ begin
          mAxiReadMasters     => axilReadMasters,
          mAxiReadSlaves      => axilReadSlaves);
 
+   AXIL_SYNC : for i in COMBINE_INDEX_C downto 0 generate
+      U_AxiLiteAsync : entity surf.AxiLiteAsync
+         generic map (
+            TPD_G            => TPD_G,
+            COMMON_CLK_G     => false,
+            AXI_ERROR_RESP_G => AXI_RESP_OK_C,  -- Prevent error responses during reset due to auto-polling threads
+            NUM_ADDR_BITS_G  => 32)
+         port map (
+            -- Slave Interface
+            sAxiClk         => axilClk,
+            sAxiClkRst      => axilRst,
+            sAxiReadMaster  => axilReadMasters(i),
+            sAxiReadSlave   => axilReadSlaves(i),
+            sAxiWriteMaster => axilWriteMasters(i),
+            sAxiWriteSlave  => axilWriteSlaves(i),
+            -- Master Interface
+            mAxiClk         => axilClk,
+            mAxiClkRst      => axilReset,  -- Using AxiLiteAsync to prevent the AXI-Lite lock up when axilReset=1
+            mAxiReadMaster  => appReadMasters(i),
+            mAxiReadSlave   => appReadSlaves(i),
+            mAxiWriteMaster => appWriteMasters(i),
+            mAxiWriteSlave  => appWriteSlaves(i));
+   end generate AXIL_SYNC;
 
    GEN_VEC : for i in 3 downto 0 generate
 
@@ -214,11 +248,11 @@ begin
          port map (
             -- AXI-Lite Interface (axilClk domain)
             axilClk         => axilClk,
-            axilRst         => axilRst,
-            axilReadMaster  => axilReadMasters(i),
-            axilReadSlave   => axilReadSlaves(i),
-            axilWriteMaster => axilWriteMasters(i),
-            axilWriteSlave  => axilWriteSlaves(i),
+            axilRst         => axilReset,
+            axilReadMaster  => appReadMasters(i),
+            axilReadSlave   => appReadSlaves(i),
+            axilWriteMaster => appWriteMasters(i),
+            axilWriteSlave  => appWriteSlaves(i),
             -- RX Frame Interface (axilClk domain)
             remoteFlush     => remoteFlush(i),
             remoteRd        => remoteRd(i),
@@ -250,7 +284,7 @@ begin
       port map (
          -- BSA/MPS Interface (usrClk domain)
          usrClk       => axilClk,
-         usrRst       => axilRst,
+         usrRst       => axilReset,
          timingStrobe => timingBus.strobe,
          timeStamp    => timingBus.message.timeStamp,
          userValue    => (others => '1'),
@@ -273,11 +307,11 @@ begin
       port map (
          -- AXI-Lite Interface
          axilClk         => axilClk,
-         axilRst         => axilRst,
-         axilReadMaster  => axilReadMasters(COMBINE_INDEX_C),
-         axilReadSlave   => axilReadSlaves(COMBINE_INDEX_C),
-         axilWriteMaster => axilWriteMasters(COMBINE_INDEX_C),
-         axilWriteSlave  => axilWriteSlaves(COMBINE_INDEX_C),
+         axilRst         => axilReset,
+         axilReadMaster  => appReadMasters(COMBINE_INDEX_C),
+         axilReadSlave   => appReadSlaves(COMBINE_INDEX_C),
+         axilWriteMaster => appWriteMasters(COMBINE_INDEX_C),
+         axilWriteSlave  => appWriteSlaves(COMBINE_INDEX_C),
          -- RX Frame Interface
          remoteFlush     => remoteFlush,
          remoteRd        => remoteRd,
@@ -288,5 +322,32 @@ begin
          timingBus       => timingBus,
          -- Diagnostic Interface
          diagnosticBus   => diagnosticBus);
+
+   U_AxiLiteRegs : entity surf.AxiLiteRegs
+      generic map (
+         TPD_G           => TPD_G,
+         NUM_WRITE_REG_G => 1,
+         NUM_READ_REG_G  => 1)
+      port map (
+         -- AXI-Lite Bus
+         axiClk           => axilClk,
+         axiClkRst        => axilRst,
+         axiReadMaster    => axilReadMasters(RESET_INDEX_C),
+         axiReadSlave     => axilReadSlaves(RESET_INDEX_C),
+         axiWriteMaster   => axilWriteMasters(RESET_INDEX_C),
+         axiWriteSlave    => axilWriteSlaves(RESET_INDEX_C),
+         -- User Read/Write registers
+         writeRegister(0) => writeReg,
+         readRegister(0)  => readReg);
+
+   appReset <= axilRst or writeReg(0);
+
+   U_axilReset : entity surf.RstPipeline
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk    => axilClk,
+         rstIn  => appReset,
+         rstOut => axilReset);
 
 end mapping;

@@ -10,6 +10,7 @@
 
 import pyrogue    as pr
 import lcls2_llrf as llrf
+import time
 
 class Application(pr.Device):
     def __init__(self,**kwargs):
@@ -26,3 +27,18 @@ class Application(pr.Device):
             offset = 0x40000000,
             # expand = True,
         ))
+
+        self.add(pr.RemoteVariable(
+            name         = 'AppRst',
+            description  = 'Application reset register',
+            offset       = 0x50000100,
+            bitSize      = 1,
+            mode         = 'RW',
+        ))
+
+        @self.command()
+        def RstApp():
+            self.AppRst.set(1)
+            time.sleep(1.0)
+            self.AppRst.set(0)
+            time.sleep(1.0)
