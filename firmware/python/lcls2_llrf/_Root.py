@@ -15,12 +15,20 @@ import pyrogue        as pr
 import AmcCarrierCore as amccCore
 import lcls2_llrf     as llrf
 
+rogue.Version.minVersion('6.0.0')
+
 class Root(pr.Root):
     def __init__(self,
             ip           = '10.0.0.107',
             backdoorComm = True,
+            zmqSrvEn     = True,  # Flag to include the ZMQ server
             **kwargs):
         super().__init__(**kwargs)
+
+        #################################################################
+        if zmqSrvEn:
+            self.zmqServer = pyrogue.interfaces.ZmqServer(root=self, addr='*', port=0)
+            self.addInterface(self.zmqServer)
 
         #################################################################
 

@@ -71,9 +71,9 @@ with amcCarrier.Root(
     initRead     = args.initRead,
 ) as root:
     pyrogue.pydm.runPyDM(
-        root  = root,
-        sizeX = 800,
-        sizeY = 600,
+        serverList = root.zmqServer.address,
+        sizeX      = 800,
+        sizeY      = 600,
     )
 
 #################################################################
