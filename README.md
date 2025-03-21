@@ -1,4 +1,7 @@
 # lcls2-llrf
+
+[DOE Code](https://www.osti.gov/doecode/biblio/75859)
+
 LCLS-II HPS LLRF MPS/BSA Receiver firmware. 
 
 <!--- ########################################################################################### -->
